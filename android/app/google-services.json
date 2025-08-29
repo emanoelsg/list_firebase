@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "803487483934",
+    "project_id": "gerenciador-de-tarefas-a0541",
+    "storage_bucket": "gerenciador-de-tarefas-a0541.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803487483934:android:070ea7369589dc5f09c60f",
+        "android_client_info": {
+          "package_name": "com.emanoelsg.list_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdASySYN9Iou5gFQV1jYltlz3t7XGNnFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

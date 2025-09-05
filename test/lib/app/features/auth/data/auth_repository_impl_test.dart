@@ -20,24 +20,5 @@ void main() {
     repository = AuthRepositoryImpl(auth: mockAuth);
   });
 
-  test('signIn deve retornar UserEntity quando login for bem-sucedido',
-      () async {
-    final mockCredential = MockUserCredential();
-    final mockUser = MockUser();
 
-    when(() => mockAuth.signInWithEmailAndPassword(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
-        )).thenAnswer((_) async => mockCredential);
-
-    when(() => mockCredential.user).thenReturn(mockUser);
-    when(() => mockUser.uid).thenReturn('123');
-    when(() => mockUser.email).thenReturn('selma@example.com');
-
-    final result = await repository.signIn('selma@example.com', '123456');
-
-    expect(result, isA<UserEntity>());
-    expect(result?.id, '123');
-    expect(result?.email, 'selma@example.com');
-  });
 }

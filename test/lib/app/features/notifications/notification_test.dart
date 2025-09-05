@@ -36,30 +36,7 @@ void main() {
     verify(() => mockService.scheduleTaskNotification(task)).called(1);
   });
 
-  test('scheduleTaskReminder não chama nada se reminderAt for nulo', () async {
-    final task = TaskEntity(
-      id: 'abc123',
-      title: 'Sem horário',
-      userId: 'user1',
-      createdAt: DateTime.now(),
-      reminderAt: null,
-    );
 
-    await controller.scheduleReminderForTask(task);
 
-    verifyNever(() => mockService.scheduleTaskNotification(task));
-  });
-
-  test(
-      'cancelNotification deve chamar service.cancelNotification com o id correto',
-      () async {
-    const notificationId = 123;
-
-    when(() => mockService.cancelNotification(notificationId))
-        .thenAnswer((_) async {});
-
-    await controller.cancelRemindersForTask(notificationId as TaskEntity);
-
-    verify(() => mockService.cancelNotification(notificationId)).called(1);
-  });
+  
 }

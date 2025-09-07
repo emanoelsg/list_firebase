@@ -1,4 +1,5 @@
 // app/features/tasks/presentation/controller/task_controller.dart
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:list_firebase/app/features/notifications/controller/notification_controller.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
@@ -8,7 +9,7 @@ import 'package:uuid/uuid.dart';
 class TaskController extends GetxController {
   final TaskRepository _repository;
   final NotificationController _notificationController;
-
+  
   TaskController({
     required TaskRepository repository,
     NotificationController? notificationController,
@@ -19,7 +20,8 @@ class TaskController extends GetxController {
   final tasks = <TaskEntity>[].obs;
   final isLoading = false.obs;
   final message = RxnString();
-
+@visibleForTesting
+NotificationController get notificationController => _notificationController;
   /// Load all tasks for a specific user
   Future<void> loadTasks(String userId) async {
     try {

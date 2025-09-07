@@ -6,7 +6,11 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationService {
-  final _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin;
+
+  // Permite injetar um plugin (útil para testes)
+  NotificationService({FlutterLocalNotificationsPlugin? plugin})
+      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
     tz.initializeTimeZones();
@@ -28,7 +32,7 @@ class NotificationService {
     );
     final details = NotificationDetails(android: androidDetails);
 
-    // Única vez
+    // Notificação única
     if (task.reminderAt != null) {
       await _plugin.zonedSchedule(
         NotificationHelper.baseId(task),
@@ -40,7 +44,7 @@ class NotificationService {
       );
     }
 
-    // Recorrente
+    // Notificação recorrente
     if ((task.repeatType == 'daily' || task.repeatType == 'weekly') &&
         task.reminderTime != null) {
       final parts = task.reminderTime!.split(':');

@@ -25,7 +25,7 @@ class _AddTaskPageState extends State<AddTaskPage>
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   TaskFrequency frequency = TaskFrequency.daily;
-  List<int> selectedWeekDays = []; // store weekdays for weekly tasks
+  List<int> selectedWeekDays = [];
   TimeOfDay? reminderTime;
   late AnimationController fadeController;
   late Animation<double> fadeAnimation;

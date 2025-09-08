@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
-import 'package:list_firebase/app/features/auth/presentation/pages/register/register_screen.dart';
+import 'package:list_firebase/app/features/auth/presentation/pages/register/register_page.dart';
 import 'package:list_firebase/app/utils/constants/sizes.dart';
 import 'package:list_firebase/app/utils/helpers/helper_functions.dart';
 

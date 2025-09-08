@@ -1,5 +1,4 @@
 // test/lib/app/features/auth/presentation/auth_controller_test.dart
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:mocktail/mocktail.dart';
@@ -7,7 +6,6 @@ import 'package:list_firebase/app/features/auth/domain/auth_repository.dart';
 import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 
-// Mock do repositório
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -15,15 +13,17 @@ void main() {
 
   late AuthController controller;
   late MockAuthRepository mockRepository;
+  late List<String> capturedErrors;
 
   final mockUser = UserEntity(id: '1', email: 'selma@email.com', name: 'Selma');
 
   setUp(() {
     Get.testMode = true;
     mockRepository = MockAuthRepository();
+    capturedErrors = [];
     controller = AuthController(
       repository: mockRepository,
-      onError: (_, msg) => debugPrint("Erro capturado: $msg"),
+      onError: (_, msg) => capturedErrors.add(msg),
     );
   });
 
@@ -32,10 +32,16 @@ void main() {
       when(() => mockRepository.signUp('Selma', 'selma@email.com', 'senha123'))
           .thenAnswer((_) async => mockUser);
 
-      await controller.signUp('Selma', 'selma@email.com', 'senha123');
+      final future = controller.signUp('Selma', 'selma@email.com', 'senha123');
+
+      // durante a execução deve estar carregando
+      expect(controller.isLoading, isTrue);
+
+      await future;
 
       expect(controller.person.value, equals(mockUser));
       expect(controller.isLoading, isFalse);
+      verify(() => mockRepository.signUp('Selma', 'selma@email.com', 'senha123')).called(1);
     });
 
     test('signUp não atualiza user quando falha', () async {
@@ -45,6 +51,18 @@ void main() {
       await controller.signUp('Selma', 'selma@email.com', 'senha123');
 
       expect(controller.person.value, isNull);
+      expect(capturedErrors, contains('Falha ao criar conta'));
+      expect(controller.isLoading, isFalse);
+    });
+
+    test('signUp lança exceção captura erro', () async {
+      when(() => mockRepository.signUp(any(), any(), any()))
+          .thenThrow(Exception('erro inesperado'));
+
+      await controller.signUp('Selma', 'selma@email.com', 'senha123');
+
+      expect(controller.person.value, isNull);
+      expect(capturedErrors.any((e) => e.contains('erro inesperado')), isTrue);
       expect(controller.isLoading, isFalse);
     });
 
@@ -52,10 +70,15 @@ void main() {
       when(() => mockRepository.signIn('selma@email.com', 'senha123'))
           .thenAnswer((_) async => mockUser);
 
-      await controller.loginWithEmail('selma@email.com', 'senha123');
+      final future = controller.loginWithEmail('selma@email.com', 'senha123');
+
+      expect(controller.isLoading, isTrue);
+
+      await future;
 
       expect(controller.person.value, equals(mockUser));
       expect(controller.isLoading, isFalse);
+      verify(() => mockRepository.signIn('selma@email.com', 'senha123')).called(1);
     });
 
     test('loginWithEmail não atualiza user quando falha', () async {
@@ -65,17 +88,29 @@ void main() {
       await controller.loginWithEmail('selma@email.com', 'senha123');
 
       expect(controller.person.value, isNull);
+      expect(capturedErrors, contains('Credenciais inválidas'));
       expect(controller.isLoading, isFalse);
     });
 
-    test('signOut limpa user', () async {
-      controller.person.value = mockUser;
+    test('loginWithEmail lança exceção captura erro', () async {
+      when(() => mockRepository.signIn(any(), any()))
+          .thenThrow(Exception('falha de rede'));
 
+      await controller.loginWithEmail('selma@email.com', 'senha123');
+
+      expect(controller.person.value, isNull);
+      expect(capturedErrors, contains('Falha ao fazer login'));
+      expect(controller.isLoading, isFalse);
+    });
+
+    test('signOut limpa user e chama repository', () async {
+      controller.person.value = mockUser;
       when(() => mockRepository.signOut()).thenAnswer((_) async {});
 
       await controller.signOut();
 
       expect(controller.person.value, isNull);
+      verify(() => mockRepository.signOut()).called(1);
     });
   });
 }

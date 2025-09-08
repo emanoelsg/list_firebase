@@ -13,7 +13,8 @@ enum TaskFrequency { daily, weekly }
 
 class AddTaskPage extends StatefulWidget {
   final TaskEntity? existingTask;
-  const AddTaskPage({super.key, this.existingTask});
+  final String? testUserId;
+  const AddTaskPage({super.key, this.existingTask, this.testUserId});
 
   @override
   State<AddTaskPage> createState() => _AddTaskPageState();
@@ -37,7 +38,7 @@ class _AddTaskPageState extends State<AddTaskPage>
   void initState() {
     super.initState();
     controller = Get.find<TaskController>();
-    userId = Get.arguments as String;
+ userId = widget.testUserId ?? Get.arguments as String;
     isEditing = widget.existingTask != null;
 
     if (isEditing) {

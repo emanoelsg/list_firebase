@@ -1,7 +1,7 @@
 // app/features/auth/presentation/pages/register/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:list_firebase/app/features/auth/presentation/pages/register/register_form/form_container.dart';
+import 'package:list_firebase/app/features/auth/presentation/widgets/register_form.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 
 class RegisterPage extends StatefulWidget {

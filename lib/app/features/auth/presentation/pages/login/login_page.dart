@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/instance_manager.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
-import 'package:list_firebase/app/features/auth/presentation/pages/login/login_widgets/login_form.dart';
+import 'package:list_firebase/app/features/auth/presentation/widgets/login_form.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

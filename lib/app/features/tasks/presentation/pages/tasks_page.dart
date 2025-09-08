@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
-import 'package:list_firebase/app/features/tasks/presentation/pages/addtask_page.dart';
+import 'package:list_firebase/app/features/tasks/presentation/widgets/addtask_page.dart';
 import 'package:list_firebase/app/utils/constants/colors.dart';
 import 'package:list_firebase/app/utils/constants/sizes.dart';
 

@@ -46,29 +46,32 @@ void main() {
   group('HomePage', () {
 
 
-    testWidgets('renderiza tasks na tela', (tester) async {
-      controller.tasks.assignAll([
-        TaskEntity(
-          id: '1',
-          title: 'Task 1',
-          userId: 'u1',
-          createdAt: DateTime.now(),
-        ),
-        TaskEntity(
-          id: '2',
-          title: 'Task 2',
-          userId: 'u1',
-          createdAt: DateTime.now(),
-          isDone: true,
-        ),
-      ]);
+         testWidgets('renderiza tasks na tela', (tester) async {
+      await tester.runAsync(() async {
+        controller.tasks.assignAll([
+          TaskEntity(
+            id: '1',
+            title: 'Task 1',
+            userId: 'u1',
+            createdAt: DateTime.now(),
+          ),
+          TaskEntity(
+            id: '2',
+            title: 'Task 2',
+            userId: 'u1',
+            createdAt: DateTime.now(),
+            isDone: true,
+          ),
+        ]);
 
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Task 1'), findsOneWidget);
-      expect(find.text('Task 2'), findsOneWidget);
+        expect(find.text('Task 1'), findsOneWidget);
+        expect(find.text('Task 2'), findsOneWidget);
+      });
     });
+
 
     testWidgets('aciona updateTask ao clicar no checkbox', (tester) async {
       final task = TaskEntity(

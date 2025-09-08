@@ -29,8 +29,7 @@ class RegisterFormContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: screenHeight),
+    return SingleChildScrollView(
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(

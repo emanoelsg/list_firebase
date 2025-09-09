@@ -29,6 +29,7 @@ dependencies:
   flutter_slidable: ^4.0.0
   timezone: ^0.10.1
   mockito: ^5.5.1
+  build_runner: ^2.8.0
 
 dev_dependencies:
   flutter_test:

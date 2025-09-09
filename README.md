@@ -1,74 +1,98 @@
-# Gerenciador de atividades diárias 
+# 📋 Gerenciador de Atividades Diárias
 
-> Aplicativo de gerenciamento de tarefas com notificações e autenticação, desenvolvido em Flutter com integração Firebase.
-
----
-
-## 🛠 Tecnologias
-
-- **Flutter & Dart** – Frontend cross-platform.
-- **GetX** – Gerenciamento de estado e navegação.
-- **Firebase Auth & Firestore** – Autenticação e banco de dados em tempo real.
-- **Notifications Service** – Agendamento de lembretes para tarefas.
-- **Testes Unitários** – Flutter Test, Mocktail, FakeFirestore.
+> Aplicativo Flutter para gerenciamento de tarefas diárias, com autenticação de usuários, notificações personalizadas e integração com Firebase.
 
 ---
 
-## ⚡ Funcionalidades
+## 🛠 Tecnologias Utilizadas
 
-- **Cadastro e Login**  
-  Autenticação de usuários com email e senha via Firebase Auth.  
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=white)
+![GetX](https://img.shields.io/badge/GetX-FF5722?style=flat&logoColor=white)
+![CI](https://img.shields.io/badge/CI-CD-blue)
+
+- **Flutter & Dart** – Desenvolvimento multiplataforma com performance nativa.  
+- **GetX** – Gerenciamento de estado reativo e navegação simplificada.  
+- **Firebase Auth & Firestore** – Autenticação segura e banco de dados em tempo real.  
+- **Notificações Locais** – Agendamento de lembretes e alertas para tarefas.  
+- **Testes Unitários** – `flutter_test`, `mocktail` e `fake_firestore` para garantir confiabilidade.  
+
+---
+
+## ⚡ Funcionalidades Principais
+
+- **Cadastro e Login de Usuário**  
+  Autenticação via email e senha com Firebase Auth.  
 
 - **CRUD de Tarefas**  
-  Criar, atualizar, excluir e listar tarefas associadas ao usuário.
+  Criar, atualizar, deletar e listar tarefas associadas a cada usuário.  
 
-- **Lembretes/Notificações**  
-  Agendamento de notificações para tarefas com horário definido.  
+- **Lembretes e Notificações**  
+  Configuração de alertas para tarefas com horário específico e repetição opcional.  
 
-- **Estado reativo**  
-  Atualização automática da UI usando GetX sempre que uma tarefa ou usuário é alterado.
+- **UI Reativa**  
+  A interface atualiza automaticamente quando dados são alterados, usando GetX.
 
 ---
 
-## 🧪 Testes
+## 🧪 Cobertura de Testes
 
-O projeto inclui testes unitários robustos, cobrindo:  
+O projeto possui testes unitários completos, incluindo:
 
-- **AuthRepository & AuthController**  
-  - Login, cadastro, logout  
-  - Casos de sucesso e falha  
+- **AuthController & AuthRepository**  
+  - Cadastro, login e logout  
+  - Tratamento de erros e exceções  
 
-- **TaskRepository & TaskController**  
-  - CRUD de tarefas  
-  - Atualização e cancelamento de notificações  
+- **TaskController & TaskRepository**  
+  - Operações de CRUD de tarefas  
+  - Cancelamento e atualização de notificações  
 
 - **TaskEntity**  
-  - Conversão `toMap` / `fromMap`  
-  - `copyWith`  
+  - Métodos `toMap` e `fromMap`  
+  - Suporte ao `copyWith`  
 
 - **NotificationController**  
-  - Verifica agendamento e cancelamento de notificações
+  - Verificação de agendamento e cancelamento de lembretes  
 
-💡 Testes garantem confiabilidade do código e facilitam futuras implementações.
-
----
-
-## 🚀 Estrutura do Prjeto
-
-- **Data** – Implementações de repositório e integração com Firebase.  
-- **Domain** – Entidades e interfaces (abstração do repositório).  
-- **Presentation** – Controllers e lógica de UI (GetX).  
-- **Service** – Funcionalidades externas, como notificações.  
+💡 Os testes garantem confiabilidade, facilitam manutenção e permitem evolução segura do app.
 
 ---
 
-## 🎯 Diferenciais
+## 🚀 Estrutura do Projeto
 
-- Projeto modular e escalável, seguindo princípios de **Clean Architecture**.  
-- Cobertura de testes completa, demonstrando **qualidade e confiabilidade do código**.  
+- **data/** – Implementação dos repositórios e integração com Firebase.  
+- **domain/** – Entidades e interfaces, abstraindo regras de negócio.  
+- **presentation/** – Controllers, páginas e widgets (UI reativa via GetX).  
+- **service/** – Serviços externos, como notificações e integração com APIs.  
+
+---
+
+## 🎯 Diferenciais do Projeto
+
+- Arquitetura modular, limpa e escalável (**Clean Architecture**).  
+- Código totalmente testável, com alta cobertura de testes unitários.  
 - Integração real com Firebase e notificações locais.  
-- Código testável, fácil de manter e estender.
+- Facilita futuras implementações e manutenção do código.  
 
 ---
 
-## 🤖 Em desenvolvimento.....
+## 📌 Em Desenvolvimento
+
+- Implementação de **CI/CD** para builds automáticos e deploys.  
+- Suporte a notificações recorrentes avançadas e integração com calendário.  
+- Melhorias na experiência do usuário e interface.
+
+---
+
+## 📦 Como Rodar
+
+```bash
+# Clonar repositório
+git clone <REPO_URL>
+
+# Instalar dependências
+flutter pub get
+
+# Rodar aplicativo
+flutter run

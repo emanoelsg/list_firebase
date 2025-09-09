@@ -6,6 +6,7 @@ import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
 import 'package:list_firebase/app/features/tasks/presentation/pages/tasks_page.dart';
+import 'package:list_firebase/app/features/tasks/presentation/widgets/addtask_page.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mocks
@@ -71,6 +72,45 @@ void main() {
         expect(find.text('Task 2'), findsOneWidget);
       });
     });
+
+testWidgets('navega para AddTaskPage ao clicar no FAB', (tester) async {
+  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.byType(FloatingActionButton));
+  await tester.pumpAndSettle();
+
+  expect(find.byType(AddTaskPage), findsOneWidget);
+});
+testWidgets('aciona edição ao clicar no Slidable Edit', (tester) async {
+  final task = TaskEntity(
+    id: '1',
+    title: 'Task 1',
+    userId: 'u1',
+    createdAt: DateTime.now(),
+  );
+
+  controller.tasks.assignAll([task]);
+  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+  await tester.pumpAndSettle();
+
+  // desliza para abrir o Slidable
+  await tester.drag(find.text('Task 1'), const Offset(500, 0));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Edit'));
+  await tester.pumpAndSettle();
+
+  expect(find.byType(AddTaskPage), findsOneWidget);
+});
+testWidgets('mostra mensagem quando não há tasks', (tester) async {
+  controller.tasks.clear();
+  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+  await tester.pumpAndSettle();
+
+  expect(find.text('No tasks found'), findsOneWidget);
+});
+
 
 
     testWidgets('aciona updateTask ao clicar no checkbox', (tester) async {

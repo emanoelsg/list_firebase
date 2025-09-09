@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:list_firebase/app/features/notifications/utils/notification_helper.dart';
 
 // Mock do plugin
 class MockFlutterLocalNotificationsPlugin extends Mock
@@ -104,4 +105,101 @@ void main() {
     // base + 2 weekDays
     verify(() => mockPlugin.cancel(any())).called(3);
   });
+  test('Init inicializa plugin corretamente', () async {
+  when(() => mockPlugin.initialize(any())).thenAnswer((_) async => true);
+
+  await service.init();
+
+  verify(() => mockPlugin.initialize(any())).called(1);
+});
+
+test('Agenda notificação diária quando repeatType = daily', () async {
+  final task = TaskEntity(
+    id: '4',
+    title: 'Task Daily',
+    userId: 'user123',
+    createdAt: DateTime.now(),
+    reminderTime: '08:30',
+    repeatType: 'daily',
+  );
+
+  await service.scheduleTaskNotification(task);
+
+  verify(() => mockPlugin.zonedSchedule(
+        any(),
+        'Lembrete de tarefa',
+        'Task Daily',
+        any(),
+        any(),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+      )).called(1);
+});
+
+test('Agenda notificações semanais quando repeatType = weekly', () async {
+  final task = TaskEntity(
+    id: '5',
+    title: 'Task Weekly',
+    userId: 'user123',
+    createdAt: DateTime.now(),
+    reminderTime: '10:00',
+    repeatType: 'weekly',
+    weekDays: [1, 5], // segunda e sexta
+  );
+
+  await service.scheduleTaskNotification(task);
+
+  verify(() => mockPlugin.zonedSchedule(
+        any(),
+        'Lembrete de tarefa',
+        'Task Weekly',
+        any(),
+        any(),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      )).called(2); // uma por cada dia da lista
+});
+
+test('CancelNotification cancela exatamente um id', () async {
+  await service.cancelNotification(42);
+
+  verify(() => mockPlugin.cancel(42)).called(1);
+});
+
+test('Agenda notificações semanais corretamente', () async {
+  final task = TaskEntity(
+    id: '4',
+    title: 'Weekly Task',
+    userId: 'user123',
+    createdAt: DateTime.now(),
+    reminderTime: '10:00',
+    repeatType: 'weekly',
+    weekDays: [DateTime.monday, DateTime.wednesday],
+  );
+
+  await service.scheduleTaskNotification(task);
+
+  // Deve agendar 2 notificações (segunda e quarta)
+  verify(() => mockPlugin.zonedSchedule(
+    NotificationHelper.weeklyId(task, DateTime.monday),
+    'Lembrete de tarefa',
+    'Weekly Task',
+    any(),
+    any(),
+    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+  )).called(1);
+
+  verify(() => mockPlugin.zonedSchedule(
+    NotificationHelper.weeklyId(task, DateTime.wednesday),
+    'Lembrete de tarefa',
+    'Weekly Task',
+    any(),
+    any(),
+    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+  )).called(1);
+});
+
+
 }

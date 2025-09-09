@@ -1,7 +1,7 @@
 # Gerenciador de atividades diárias 
 
 > Aplicativo de gerenciamento de tarefas com notificações e autenticação, desenvolvido em Flutter com integração Firebase.
-
+[![codecov](https://codecov.io/gh/emanoelsg/list_firebase/graph/badge.svg?token=OH5YR7MGM0)](https://codecov.io/gh/emanoelsg/list_firebase)
 ---
 
 ## 🛠 Tecnologias

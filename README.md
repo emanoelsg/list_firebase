@@ -100,5 +100,5 @@ flutter pub get
 flutter run
 
 ```
-[📲 Baixar Lista de Tarefas v1.0](https://github.com/emanoelsg/list_firebase/releases/download/1.0/app-release.apk)
+[📲 Baixar Lista de Tarefas v1.0](https://github.com/emanoelsg/list_firebase/releases/latest/download/app-release.apk)
 

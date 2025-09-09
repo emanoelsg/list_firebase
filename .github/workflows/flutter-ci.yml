@@ -45,8 +45,21 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+      # Cria release automática
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
         with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          tag: v1.${{ github.run_number }}
+          name: Release v1.${{ github.run_number }}
+          body: "Automated release from GitHub Actions"
+          draft: false
+          prerelease: false
+
+      # Upload do APK para a release
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

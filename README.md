@@ -98,3 +98,7 @@ flutter pub get
 
 # Rodar aplicativo
 flutter run
+
+```
+[📲 Baixar Lista de Tarefas v1.0](https://github.com/emanoelsg/list_firebase/releases/latest/download/app-release.apk)
+

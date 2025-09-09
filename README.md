@@ -98,3 +98,6 @@ flutter pub get
 
 # Rodar aplicativo
 flutter run
+
+```
+[📲 Baixar APK v1.0.0](https://github.com/emanoelsg/list_firebase/releases/download/v1.0/app-release.apk)

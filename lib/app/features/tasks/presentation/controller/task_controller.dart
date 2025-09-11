@@ -1,15 +1,17 @@
 // app/features/tasks/presentation/controller/task_controller.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:list_firebase/app/core/base/base_state.dart';
 import 'package:list_firebase/app/features/notifications/controller/notification_controller.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:uuid/uuid.dart';
 
-class TaskController extends GetxController {
+class TaskController extends GetxController with BaseState<TaskController> {
   final TaskRepository _repository;
   final NotificationController _notificationController;
-  
+
   TaskController({
     required TaskRepository repository,
     NotificationController? notificationController,
@@ -18,23 +20,30 @@ class TaskController extends GetxController {
             notificationController ?? Get.find<NotificationController>();
 
   final tasks = <TaskEntity>[].obs;
-  final isLoading = false.obs;
   final message = RxnString();
-@visibleForTesting
-NotificationController get notificationController => _notificationController;
-  /// Load all tasks for a specific user
-  Future<void> loadTasks(String userId) async {
-    try {
-      isLoading.value = true;
-      tasks.value = await _repository.getTasks(userId);
-    } catch (e) {
-      message.value = 'Error loading tasks: $e';
-    } finally {
-      isLoading.value = false;
-    }
+  StreamSubscription<List<TaskEntity>>? _tasksSubscription;
+
+  @visibleForTesting
+  NotificationController get notificationController => _notificationController;
+
+  /// Carrega todas as tarefas para um usuário específico
+  void loadTasks(String userId) {
+    isLoading.value = true;
+    _tasksSubscription?.cancel();
+    _tasksSubscription = _repository.watchTasks(userId).listen(
+      (taskList) {
+        tasks.value = taskList;
+        error.value = '';
+        isLoading.value = false;
+      },
+      onError: (e) {
+        error.value = 'Error loading tasks: $e';
+        isLoading.value = false;
+      },
+    );
   }
 
-  /// Add a new task
+  /// Adiciona uma nova tarefa
   Future<void> addTask(
     String userId,
     String title,
@@ -55,21 +64,22 @@ NotificationController get notificationController => _notificationController;
     );
 
     try {
+      isLoading.value = true;
       await _repository.addTask(userId, task);
 
-      // Schedule notifications
       if (task.reminderTime != null) {
         await _notificationController.scheduleReminderForTask(task);
       }
 
-      await loadTasks(userId);
       message.value = 'Task added successfully';
     } catch (e) {
-      message.value = 'Error adding task: $e';
+      error.value = 'Error adding task: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  /// Update an existing task
+  /// Atualiza uma tarefa existente
   Future<void> updateTask(
     String userId,
     TaskEntity task, {
@@ -84,15 +94,9 @@ NotificationController get notificationController => _notificationController;
     );
 
     try {
+      isLoading.value = true;
       await _repository.updateTask(userId, updatedTask);
 
-      // Update local list
-      final index = tasks.indexWhere((t) => t.id == updatedTask.id);
-      if (index != -1) {
-        tasks[index] = updatedTask;
-      }
-
-      // Cancel previous notifications and schedule new ones
       await _notificationController.cancelRemindersForTask(task);
       if (updatedTask.reminderTime != null) {
         await _notificationController.scheduleReminderForTask(updatedTask);
@@ -100,31 +104,39 @@ NotificationController get notificationController => _notificationController;
 
       message.value = 'Task updated';
     } catch (e) {
-      message.value = 'Error updating task: $e';
+      error.value = 'Error updating task: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  /// Delete a task
+  /// Exclui uma tarefa
   Future<void> deleteTask(String userId, String taskId) async {
     try {
+      isLoading.value = true;
       final task = tasks.firstWhere((t) => t.id == taskId);
 
       await _repository.deleteTask(userId, taskId);
-      tasks.removeWhere((t) => t.id == taskId);
-
-      // Cancel all notifications for this task
       await _notificationController.cancelRemindersForTask(task);
 
       message.value = 'Task deleted';
     } catch (e) {
-      message.value = 'Error deleting task: $e';
+      error.value = 'Error deleting task: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  /// Toggle task completion
+  /// Alterna o estado de conclusão da tarefa
   Future<void> toggleTaskDone(
       String userId, TaskEntity task, bool isDone) async {
     final updatedTask = task.copyWith(isDone: isDone);
     await updateTask(userId, updatedTask);
+  }
+
+  @override
+  void onClose() {
+    _tasksSubscription?.cancel();
+    super.onClose();
   }
 }

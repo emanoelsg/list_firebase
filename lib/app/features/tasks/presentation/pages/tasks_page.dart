@@ -64,7 +64,20 @@ class _HomePageState extends State<HomePage> {
             child: CircularProgressIndicator(color: TColors.primary),
           );
         }
-
+           if (controller.error.value.isNotEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(controller.error.value),
+                ElevatedButton(
+                  onPressed: () => controller.loadTasks(userId),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        }
         if (controller.tasks.isEmpty) {
           return const Center(
             child: Text(
@@ -73,7 +86,7 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         }
-
+        
         return Padding(
           padding: const EdgeInsets.all(TSizes.md),
           child: ListView.separated(

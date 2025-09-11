@@ -45,7 +45,6 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      # Cria release automática
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -56,7 +55,6 @@ jobs:
           draft: false
           prerelease: false
 
-      # Upload do APK para a release
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v1
         with:

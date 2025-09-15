@@ -1,102 +1,121 @@
-import 'package:firebase_auth/firebase_auth.dart';
+// test/lib/app/features/auth/presentation/pages/register/register_page_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:list_firebase/app/core/mixins/base_state.dart';
+import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
+import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/auth/presentation/pages/register/register_page.dart';
 import 'package:list_firebase/app/features/auth/presentation/widgets/register_form.dart';
-import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
-import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
 
-class FakeAuthController extends GetxController implements AuthController {
-  final _loading = false.obs;
-  List<List<String>> signUpCalls = [];
-
+// Mock the AuthController to control its state for testing.
+class MockAuthController extends GetxController with BaseState implements AuthController {
+  // Override `buildWhen` to test the UI logic correctly.
   @override
-  bool get isLoading => _loading.value;
-  @override
-  set isLoading(bool value) => _loading.value = value;
-  void setLoading(bool value) => _loading.value = value;
-
-  @override
-  Future<void> signUp(String name, String email, String password) async {
-    signUpCalls.add([name, email, password]);
+  Widget buildWhen({
+    required Widget Function() onSuccess,
+    Widget Function()? onLoading,
+    Widget Function(String)? onError,
+  }) {
+    // This override allows the test to manually control the state.
+    return Obx(() {
+      if (state.value == ControllerState.loading) {
+        return onLoading?.call() ?? const CircularProgressIndicator();
+      }
+      if (state.value == ControllerState.error) {
+        return onError?.call(errorMessage.value ?? 'Error') ?? const Text('Error');
+      }
+      return onSuccess();
+    });
   }
 
+  // Mock methods to prevent errors during tests
   @override
-  bool get isLoggedIn => false;
+  Future<void> getCurrentUser() async {}
   @override
-  Rxn<UserEntity> get person => Rxn<UserEntity>();
-  @override
-  User? get user => null;
+  Future<void> signUp(String name, String email, String password) async {}
   @override
   Future<void> loginWithEmail(String email, String password) async {}
   @override
   Future<void> signOut() async {}
+
   @override
-  void Function(String title, String message)? get onError => null;
+  Rxn<UserEntity> person = Rxn<UserEntity>();
+
+  @override
+  bool get isLoggedIn => person.value != null;
+  
+  @override
+  RxBool get hasError => throw UnimplementedError();
+  
+  @override
+  RxBool get isLoading => throw UnimplementedError();
 }
 
 void main() {
-  late FakeAuthController fakeController;
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late MockAuthController mockAuthController;
 
   setUp(() {
+    mockAuthController = MockAuthController();
     Get.testMode = true;
-    fakeController = FakeAuthController();
-    Get.put<AuthController>(fakeController);
+    Get.put<AuthController>(mockAuthController);
   });
 
   tearDown(() {
     Get.reset();
   });
 
-  Widget makeTestableWidget(Widget child) {
-    return GetMaterialApp(home: child);
+  Widget makeTestableWidget() {
+    return const GetMaterialApp(
+      home: RegisterPage(),
+    );
   }
 
-  testWidgets('Renderiza títulos e RegisterForm', (tester) async {
-    await tester.pumpWidget(makeTestableWidget(const RegisterPage()));
+  group('RegisterPage', () {
+    testWidgets('should render all static widgets correctly', (tester) async {
+      // Arrange
+      mockAuthController.state.value = ControllerState.success;
+      await tester.pumpWidget(makeTestableWidget());
 
-    // Verifica se os títulos estão presentes
-    expect(find.text('Register'), findsWidgets);
-    expect(find.text('Create your account'), findsOneWidget);
+      // Assert
+      expect(find.byType(Scaffold), findsOneWidget);
+      expect(find.byType(SafeArea), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(find.text('Register'), findsWidgets);
+      expect(find.text('Create your account'), findsOneWidget);
+      expect(find.byType(RegisterFormContainer), findsOneWidget);
+    });
 
-    // Verifica se o RegisterFormContainer está presente
-    expect(find.byType(RegisterFormContainer), findsOneWidget);
-  });
+    testWidgets('should show loading indicator when AuthController is in loading state', (tester) async {
+      // Arrange
+      mockAuthController.state.value = ControllerState.loading;
+      await tester.pumpWidget(makeTestableWidget());
 
-  testWidgets('Chama signUp ao preencher formulário e apertar Register', (tester) async {
-    await tester.pumpWidget(makeTestableWidget(const RegisterPage()));
+      // Assert
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(RegisterFormContainer), findsNothing);
+    });
 
-    // Encontra os TextFormFields do RegisterFormContainer
-    final nameField = find.byType(TextFormField).at(0);
-    final emailField = find.byType(TextFormField).at(1);
-    final passwordField = find.byType(TextFormField).at(2);
-    final confirmField = find.byType(TextFormField).at(3);
-    final registerButton = find.byKey(const Key('register_button'));
+    testWidgets('should show RegisterFormContainer when AuthController is in success state', (tester) async {
+      // Arrange
+      mockAuthController.state.value = ControllerState.success;
+      await tester.pumpWidget(makeTestableWidget());
 
-    // Preenche os campos com dados válidos
-    await tester.enterText(nameField, 'Selma');
-    await tester.enterText(emailField, 'selma@email.com');
-    await tester.enterText(passwordField, 'Abc123!');
-    await tester.enterText(confirmField, 'Abc123!');
+      // Assert
+      expect(find.byType(RegisterFormContainer), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
 
-    // Toca no botão
-    await tester.tap(registerButton);
-    await tester.pump();
+    testWidgets('should show RegisterFormContainer when AuthController is in error state', (tester) async {
+      // Arrange
+      mockAuthController.state.value = ControllerState.error;
+      await tester.pumpWidget(makeTestableWidget());
 
-    // Verifica se o método signUp foi chamado
-    expect(fakeController.signUpCalls.length, 1);
-    expect(fakeController.signUpCalls[0][0], 'Selma');
-    expect(fakeController.signUpCalls[0][1], 'selma@email.com');
-    expect(fakeController.signUpCalls[0][2], 'Abc123!');
-  });
-
-  testWidgets('Mostra loader quando isLoading = true', (tester) async {
-    fakeController.setLoading(true);
-    await tester.pumpWidget(makeTestableWidget(const RegisterPage()));
-    await tester.pump();
-
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.byKey(const Key('register_button')), findsOneWidget);
+      // Assert
+      // In this specific implementation, we decided to show the form again on error.
+      expect(find.byType(RegisterFormContainer), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
   });
 }

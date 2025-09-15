@@ -1,8 +1,8 @@
-// test/helper_functions_test.dart
+// test/lib/app/utils/helpers/helper_functions_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:list_firebase/app/utils/helpers/helper_functions.dart';
+import 'package:list_firebase/app/core/common/helpers/helper_functions.dart';
 
 void main() {
   setUp(() {

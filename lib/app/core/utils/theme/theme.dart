@@ -1,6 +1,6 @@
-// app/utils/theme/theme.dart
+// app/core/utils/theme/theme.dart
 import 'package:flutter/material.dart';
-import 'package:list_firebase/app/utils/constants/colors.dart';
+import 'package:list_firebase/app/core/utils/constants/colors.dart';
 
 
 class TAppTheme {

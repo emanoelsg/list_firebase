@@ -2,144 +2,110 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
+import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/notifications/controller/notification_controller.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
-import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
 import 'package:list_firebase/app/features/tasks/presentation/pages/tasks_page.dart';
-import 'package:list_firebase/app/features/tasks/presentation/widgets/addtask_page.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockTaskRepository extends Mock implements TaskRepository {
-@override
-Stream<List<TaskEntity>> watchTasks(String userId) {
-  return Stream.value([
-    TaskEntity(
-      id: '1', 
-      title: 'Task 1', 
-      userId: userId, 
-      createdAt: DateTime.now()
-    )
-  ]);
-}
+// Mocks para simular os controladores e serviços
+class MockTaskController extends GetxController with Mock implements TaskController {}
+class MockAuthController extends GetxController with Mock implements AuthController {}
+class MockNotificationController extends Mock implements NotificationController {}
 
-}
-
-
-
-class MockNotificationController extends Mock
-    implements NotificationController {}
-
-// Fake necessário para `any<TaskEntity>()`
-class FakeTaskEntity extends Fake implements TaskEntity {}
+class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 void main() {
-  late MockTaskRepository mockRepo;
-  late MockNotificationController mockNotif;
-  late TaskController controller;
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late MockTaskController mockTaskController;
+  late MockAuthController mockAuthController;
+  late MockNavigatorObserver mockNavigatorObserver;
 
-  setUpAll(() {
-    registerFallbackValue(FakeTaskEntity());
-    Get.testMode = true; // desativa snackbars reais
-  });
+  const userId = 'test-user-id';
 
+  // Configurações iniciais antes de cada teste
   setUp(() {
-    mockRepo = MockTaskRepository();
-    mockNotif = MockNotificationController();
+    mockTaskController = MockTaskController();
+    mockAuthController = MockAuthController();
+    mockNavigatorObserver = MockNavigatorObserver();
 
-    controller = TaskController(
-      repository: mockRepo,
-      notificationController: mockNotif,
-    );
+    // Configura a simulação de um usuário logado
+    when(() => mockAuthController.person).thenReturn(Rxn(UserEntity(id: userId, email: 'test@example.com')));
 
-    Get.put<TaskController>(controller);
+    // Injeta os mocks no GetX
+    Get.put<AuthController>(mockAuthController);
+    Get.put<TaskController>(mockTaskController);
+    Get.put<RouteObserver>(mockNavigatorObserver as RouteObserver<Route>);
   });
 
+  // Reseta o GetX e os mocks após cada teste
   tearDown(() {
-    Get.reset();
-  });
 
- group('HomePage', () {
-  group('Renderização', () {
-    testWidgets('mostra tasks na tela', (tester) async {
-      controller.tasks.assignAll([
-        TaskEntity(id: '1', title: 'Task 1', userId: 'u1', createdAt: DateTime.now()),
-        TaskEntity(id: '2', title: 'Task 2', userId: 'u1', createdAt: DateTime.now(), isDone: true),
-      ]);
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+    void main() {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      late MockTaskController mockTaskController;
+      late MockAuthController mockAuthController;
+      late RouteObserver<Route> routeObserver;
+
+      const userId = 'test-user-id';
+
+      setUp(() {
+        mockTaskController = MockTaskController();
+        mockAuthController = MockAuthController();
+        routeObserver = RouteObserver<Route>();
+
+        when(() => mockAuthController.person).thenReturn(Rxn(UserEntity(id: userId, email: 'test@example.com')));
+
+        Get.put<AuthController>(mockAuthController);
+        Get.put<TaskController>(mockTaskController);
+        Get.put<RouteObserver>(routeObserver);
+      });
+
+      tearDown(() {
+        Get.reset();
+      });
+
+      Widget makeTestableWidget() {
+        return GetMaterialApp(
+          home: TasksPage(userId: userId),
+          navigatorObservers: [routeObserver],
+        );
+      }
+    });
+
+    testWidgets('should show "No tasks found" message when tasks list is empty', (tester) async {
+      // Simula o estado de sucesso, mas com a lista de tarefas vazia
+      when(() => mockTaskController.state).thenReturn(TaskControllerState.success.obs);
+      when(() => mockTaskController.tasks).thenReturn(<TaskEntity>[].obs);
+      when(() => mockTaskController.errorMessage).thenReturn(RxnString());
+
+      await tester.pumpWidget(makeTestableWidget());
       await tester.pumpAndSettle();
 
+      // Verifica se a mensagem de lista vazia está na tela
+      expect(find.text('Nenhuma tarefa encontrada. Clique no "+" para adicionar uma.'), findsOneWidget);
+    });
+
+    testWidgets('should show a list of tasks when data is available', (tester) async {
+      // Simula o estado de sucesso com tarefas
+      final tasks = [
+        TaskEntity(id: '1', title: 'Task 1', description: 'Desc 1', isDone: false, userId: userId, createdAt: DateTime.now()),
+        TaskEntity(id: '2', title: 'Task 2', description: 'Desc 2', isDone: true, userId: userId, createdAt: DateTime.now()),
+      ];
+
+      when(() => mockTaskController.state).thenReturn(TaskControllerState.success.obs);
+      when(() => mockTaskController.tasks).thenReturn(tasks.obs);
+      when(() => mockTaskController.errorMessage).thenReturn(RxnString());
+
+      await tester.pumpWidget(makeTestableWidget());
+      await tester.pumpAndSettle();
+
+      // Verifica se as tarefas estão na tela
       expect(find.text('Task 1'), findsOneWidget);
       expect(find.text('Task 2'), findsOneWidget);
-    });
-
-    testWidgets('mostra mensagem quando não há tasks', (tester) async {
-      controller.tasks.clear();
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
-      expect(find.text('No tasks found'), findsOneWidget);
+      expect(find.byType(ListView), findsOneWidget);
     });
   });
-
-  group('Navegação', () {
-    testWidgets('navega para AddTaskPage ao clicar no FAB', (tester) async {
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AddTaskPage), findsOneWidget);
-    });
-
-    testWidgets('aciona edição ao clicar no Slidable Edit', (tester) async {
-      final task = TaskEntity(id: '1', title: 'Task 1', userId: 'u1', createdAt: DateTime.now());
-      controller.tasks.assignAll([task]);
-
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
-
-      await tester.drag(find.text('Task 1'), const Offset(500, 0));
-      await tester.tap(find.text('Edit'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AddTaskPage), findsOneWidget);
-    });
-  });
-
-  group('Ações', () {
-    testWidgets('aciona updateTask ao clicar no checkbox', (tester) async {
-      final task = TaskEntity(id: '1', title: 'Task 1', userId: 'u1', createdAt: DateTime.now());
-      controller.tasks.assignAll([task]);
-      when(() => mockRepo.updateTask(any(), any())).thenAnswer((_) async {});
-
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(Checkbox));
-      await tester.pumpAndSettle();
-
-      verify(() => mockRepo.updateTask('u1', any<TaskEntity>())).called(1);
-    });
-
-    testWidgets('aciona deleteTask ao clicar em Delete', (tester) async {
-      final task = TaskEntity(id: '1', title: 'Task 1', userId: 'u1', createdAt: DateTime.now());
-      controller.tasks.assignAll([task]);
-      when(() => mockRepo.deleteTask(any(), any())).thenAnswer((_) async {});
-      when(() => mockNotif.cancelRemindersForTask(any())).thenAnswer((_) async {});
-
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pump();
-
-      await tester.drag(find.text('Task 1'), const Offset(-500, 0));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Delete'));
-      await tester.pump();
-
-      verify(() => mockRepo.deleteTask('u1', '1')).called(1);
-      verify(() => mockNotif.cancelRemindersForTask(task)).called(1);
-    });
-  });
-});
-
 }

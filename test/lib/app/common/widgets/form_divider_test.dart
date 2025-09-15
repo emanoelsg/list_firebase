@@ -1,7 +1,8 @@
+// test/lib/app/common/widgets/form_divider_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:list_firebase/app/common/widgets/form_divider.dart';
-import 'package:list_firebase/app/utils/constants/colors.dart';
+import 'package:list_firebase/app/core/common/widgets/form_divider.dart';
+import 'package:list_firebase/app/core/utils/constants/colors.dart';
 
 
 void main() {

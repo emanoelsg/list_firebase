@@ -1,106 +1,112 @@
 // app/features/auth/presentation/controller/auth_controller.dart
-
+import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:list_firebase/app/features/auth/domain/auth_repository.dart';
+import 'package:list_firebase/app/core/mixins/base_state.dart';
 import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
-import 'package:list_firebase/app/features/auth/presentation/pages/login/login_page.dart';
-import 'package:list_firebase/app/features/tasks/presentation/pages/tasks_page.dart';
+import 'package:list_firebase/app/features/auth/domain/auth_repository.dart';
 
-
-class AuthController extends GetxController {
+/// The AuthController manages user authentication, including sign-up, sign-in, and sign-out.
+/// It uses a reactive approach with GetX to update the UI based on state changes.
+class AuthController extends GetxController with BaseState {
   final AuthRepository _repository;
-  final void Function(String title, String message)? onError;
 
-  AuthController({
-    required AuthRepository repository,
-    this.onError,
-  }) : _repository = repository;
+  /// Estado reativo para loading e erro
+  final RxBool isLoading = false.obs;
+  final RxBool hasError = false.obs;
 
+  /// Private constructor to enforce dependency injection.
+  AuthController({required AuthRepository repository}) : _repository = repository;
+
+  /// Reactive variable to hold the authenticated user's data.
   final Rxn<UserEntity> person = Rxn<UserEntity>();
-  final RxBool _isLoading = false.obs;
-  final Rx<User?> _user = Rx<User?>(null);
 
-  bool get isLoading => _isLoading.value;
-  set isLoading(bool value) => _isLoading.value = value;
-
+  /// Computed property to check if a user is currently logged in.
   bool get isLoggedIn => person.value != null;
-  User? get user => _user.value;
 
-  @override
-  void onInit() {
-    super.onInit();
-
-    FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) {
-      _user.value = firebaseUser;
-
-      if (firebaseUser != null) {
-        Get.offAll(() => HomePage(userId: firebaseUser.uid));
-      } else {
-        Get.offAll(() => const LoginPage());
-      }
-    });
-  }
-
-  Future<void> signUp(String name, String email, String password) async {
+  /// Fetches the current user data from the repository.
+  /// This is typically called on app startup to restore the user session.
+  Future<void> getCurrentUser() async {
     try {
-      isLoading = true;
-
-      final result = await _repository.signUp(name, email, password);
-      if (result != null) {
-        person.value = result;
-        Get.offAll(() => HomePage(userId: result.id));
-      } else {
-        _showError('Falha ao criar conta');
-      }
+      final user = await _repository.getCurrentUser();
+      person.value = user;
     } catch (e) {
-      final errorMessage = e is FirebaseAuthException
-          ? e.message ?? 'Erro desconhecido'
-          : e.toString();
-      _showError(errorMessage);
-    } finally {
-      isLoading = false;
+      // It's common to fail silently here as a lack of user data
+      // is not an error but a state of being logged out.
+      debugPrint('Failed to get current user: $e');
     }
   }
 
+  /// Handles user sign-up with email and password.
+  Future<void> signUp(String name, String email, String password) async {
+    state.value = ControllerState.loading;
+    try {
+      final result = await _repository.signUp(name, email, password);
+      if (result != null) {
+        person.value = result;
+        state.value = ControllerState.success;
+      } else {
+        errorMessage.value = 'Failed to create account. Please try again.';
+        state.value = ControllerState.error;
+      }
+    } on FirebaseAuthException catch (e) {
+      // Specific handling for Firebase Authentication errors.
+      errorMessage.value = e.message ?? 'An unknown authentication error occurred.';
+      state.value = ControllerState.error;
+    } catch (e) {
+      // Generic error handling for other exceptions.
+      errorMessage.value = e.toString();
+      state.value = ControllerState.error;
+    } finally {
+      _showSnackbarOnError();
+    }
+  }
+
+  /// Handles user sign-in with email and password.
   Future<void> loginWithEmail(String email, String password) async {
-    isLoading = true;
+    state.value = ControllerState.loading;
     try {
       final result = await _repository.signIn(email, password);
       if (result != null) {
         person.value = result;
-        Get.offAll(() => HomePage(userId: result.id));
+        state.value = ControllerState.success;
       } else {
-        _showError('Credenciais inválidas');
+        errorMessage.value = 'Invalid credentials. Please check your email and password.';
+        state.value = ControllerState.error;
       }
+    } on FirebaseAuthException catch (e) {
+      // Specific handling for Firebase Authentication errors.
+      errorMessage.value = e.message ?? 'An unknown authentication error occurred.';
+      state.value = ControllerState.error;
     } catch (e) {
-      _showError('Falha ao fazer login');
-      debugPrint('Login error: $e');
+      // Generic error handling.
+      errorMessage.value = 'Failed to sign in. Please try again later.';
+      state.value = ControllerState.error;
     } finally {
-      isLoading = false;
+      _showSnackbarOnError();
     }
   }
 
+  /// Signs out the current user and clears the local user data.
   Future<void> signOut() async {
     await _repository.signOut();
     person.value = null;
-    Get.off(() => const LoginPage());
   }
 
-  void _showError(String message) {
-    if (Get.testMode && onError != null) {
-      onError!("Erro", message);
-      return;
+  /// Private helper method to show a snackbar with the error message.
+  void _showSnackbarOnError() {
+    if (state.value == ControllerState.error) {
+      // Só mostra snackbar se houver contexto de navegação (evita erro em teste)
+      if (Get.context != null) {
+        Get.snackbar(
+          'Error',
+          errorMessage.value ?? '',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
     }
-
-    Get.snackbar(
-      'Erro',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.redAccent,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
   }
 }

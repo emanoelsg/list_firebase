@@ -9,15 +9,14 @@ import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:uuid/uuid.dart';
 
 class TaskController extends GetxController with BaseState<TaskController> {
-  final TaskRepository _repository;
+   final TaskRepository _repository;
   final NotificationController _notificationController;
 
   TaskController({
     required TaskRepository repository,
-    NotificationController? notificationController,
+    required NotificationController notificationController,
   })  : _repository = repository,
-        _notificationController =
-            notificationController ?? Get.find<NotificationController>();
+        _notificationController = notificationController;
 
   final tasks = <TaskEntity>[].obs;
   final message = RxnString();
@@ -25,7 +24,6 @@ class TaskController extends GetxController with BaseState<TaskController> {
 
   @visibleForTesting
   NotificationController get notificationController => _notificationController;
-
   /// Carrega todas as tarefas para um usuário específico
   void loadTasks(String userId) {
     isLoading.value = true;

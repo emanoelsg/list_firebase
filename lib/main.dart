@@ -17,22 +17,26 @@ import 'package:list_firebase/app/utils/theme/theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   tz.initializeTimeZones();
 
-  // Serviços e repositórios
+  // Serviços
   final taskRepository = TaskRepositoryImpl();
   final authRepository = AuthRepositoryImpl();
   final notificationService = NotificationService();
   await notificationService.init();
 
-  // Controllers (injeção centralizada)
-  Get.put(TaskController(repository: taskRepository));
+  // Primeiro registra NotificationController
+  final notificationController = Get.put(
+    NotificationController(service: notificationService),
+  );
+
+  Get.put(TaskController(
+    repository: taskRepository,
+    notificationController: notificationController,
+  ));
+
   Get.put(AuthController(repository: authRepository));
-  Get.put(NotificationController(service: notificationService));
 
   runApp(const ListTarefa());
 }
@@ -46,9 +50,7 @@ class ListTarefa extends StatelessWidget {
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       debugShowCheckedModeBanner: false,
     );
   }

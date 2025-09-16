@@ -46,10 +46,7 @@ class MockAuthController extends GetxController with BaseState implements AuthCo
   @override
   bool get isLoggedIn => person.value != null;
   
-  @override
-  final RxBool hasError = false.obs;
-  @override
-  final RxBool isLoading = false.obs;
+
 }
 
 void main() {

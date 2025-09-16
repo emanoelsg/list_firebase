@@ -25,10 +25,7 @@ class MockAuthController extends GetxController with BaseState implements AuthCo
   @override
   Future<void> getCurrentUser() async {}
   
-  @override
-  final RxBool hasError = false.obs;
-  @override
-  final RxBool isLoading = false.obs;
+
 }
 
 void main() {

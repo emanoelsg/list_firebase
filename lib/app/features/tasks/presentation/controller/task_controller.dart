@@ -9,7 +9,7 @@ import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:uuid/uuid.dart';
 
 // Enum para gerenciar os estados da tela de forma clara
-enum TaskControllerState { idle, loading, success, error }
+enum TaskControllerState { idle, loading, success, error, initial }
 
 class TaskController extends GetxController {
   final TaskRepository _repository;

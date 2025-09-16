@@ -11,10 +11,6 @@ import 'package:list_firebase/app/features/auth/domain/auth_repository.dart';
 class AuthController extends GetxController with BaseState {
   final AuthRepository _repository;
 
-  /// Estado reativo para loading e erro
-  final RxBool isLoading = false.obs;
-  final RxBool hasError = false.obs;
-
   /// Private constructor to enforce dependency injection.
   AuthController({required AuthRepository repository}) : _repository = repository;
 

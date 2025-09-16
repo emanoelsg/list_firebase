@@ -202,6 +202,8 @@ class _TasksPageState extends State<TasksPage> {
                 },
               ),
             );
+          case TaskControllerState.initial:
+            throw UnimplementedError();
           }
       }),
     );

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:list_firebase/app/core/mixins/base_state.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/auth/presentation/widgets/login_form.dart';
 
@@ -31,8 +32,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-  
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -48,56 +47,66 @@ class _LoginPageState extends State<LoginPage> {
               return SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      // Títulos
-                      Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            const SizedBox(height: 50),
-                            Text(
-                              'Login',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineLarge!
-                                  .apply(color: Colors.white),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Títulos
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                SizedBox(height: 50),
+                                Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Welcome Back',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 28,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              'Welcome Back',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall!
-                                  .apply(color: Colors.white),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
 
-                      // Formulário reativo via BaseState
-                      authController.buildWhen(
-                        onSuccess: () => LoginFormContainer(
-                          authController: authController,
-                          formKey: _formKey,
-                          emailController: _emailCtrl,
-                          passwordController: _passCtrl,
-                        ),
-                        onLoading: () => const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                        onError: (message) => LoginFormContainer(
-                          authController: authController,
-                          formKey: _formKey,
-                          emailController: _emailCtrl,
-                          passwordController: _passCtrl,
-                        ),
-                      ),
+                        Expanded(
+                          flex: 3,
+                          child: Obx(() {
+                            final state = authController.state.value;
 
-                      const SizedBox(height: 50),
-                    ],
+                            if (state == ControllerState.loading) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              );
+                            } else {
+                              // Mostra o formulário em idle, error ou qualquer outro estado
+                              return LoginFormContainer(
+                                authController: authController,
+                                formKey: _formKey,
+                                emailController: _emailCtrl,
+                                passwordController: _passCtrl,
+                              );
+                            }
+                          }),
+                        ),
+
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
                 ),
               );

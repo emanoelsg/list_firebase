@@ -77,7 +77,7 @@ void main() {
 
       // Assert
       expect(controller.state.value, ControllerState.error);
-      expect(controller.errorMessage.value, 'Invalid credentials. Please check your email and password.');
+      expect(controller.errorMessage.value, 'Invalid credentials.');
       expect(controller.person.value, isNull);
     });
     

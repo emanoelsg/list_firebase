@@ -25,6 +25,10 @@ class MockAuthController extends GetxController with BaseState implements AuthCo
   Future<void> signOut() async {}
   @override
   Future<void> getCurrentUser() async {}
+
+  
+  @override
+  UserEntity? get currentUser => throw UnimplementedError();
   
 }
 

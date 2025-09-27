@@ -1,4 +1,5 @@
 // app/core/bindings/initial_binding.dart
+// app/core/bindings/initial_binding.dart
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

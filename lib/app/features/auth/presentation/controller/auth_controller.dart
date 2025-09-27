@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:list_firebase/app/core/mixins/base_state.dart';
 import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
 import 'package:list_firebase/app/features/auth/domain/auth_repository.dart';
+import 'package:list_firebase/app/features/tasks/presentation/pages/tasks_page.dart';
 
 class AuthController extends GetxController with BaseState {
   final AuthRepository _repository;
@@ -12,9 +13,9 @@ class AuthController extends GetxController with BaseState {
   AuthController({required AuthRepository repository}) : _repository = repository {
     debugPrint('[AuthController] Instanciado');
   }
-
+ 
   final Rxn<UserEntity> person = Rxn<UserEntity>();
-
+  UserEntity? get currentUser => person.value;
   bool get isLoggedIn => person.value != null;
 
   @override
@@ -41,6 +42,7 @@ class AuthController extends GetxController with BaseState {
       if (result != null) {
         person.value = result;
         debugPrint('[AuthController] signUp -> Usuário criado: ${result.uid}');
+Get.offAll(() => TasksPage(userId: currentUser!.uid));
         state.value = ControllerState.success;
       } else {
         errorMessage.value = 'Failed to create account. Please try again.';
@@ -64,6 +66,7 @@ class AuthController extends GetxController with BaseState {
       if (result != null) {
         person.value = result;
         debugPrint('[AuthController] loginWithEmail -> Login bem-sucedido: ${result.uid}');
+      Get.offAll(() => TasksPage(userId: currentUser!.uid));
         state.value = ControllerState.success;
       } else {
         errorMessage.value = 'Invalid credentials.';

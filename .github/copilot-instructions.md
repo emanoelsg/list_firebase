@@ -49,7 +49,7 @@
 
 ## References
 - See `README.md` for tech stack and project goals.
-- See `test/` for unit test patterns.
+- See `test/` for unit and widgettest patterns.
 - See `lib/app/features/tasks/` for a complete feature example.
 
 ---

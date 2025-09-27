@@ -57,7 +57,7 @@ class _TasksPageState extends State<TasksPage> {
         foregroundColor: TColors.textWhite,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => const AddTaskPage()),
+        onPressed: () => Get.to(() => const AddTaskPage(),arguments: userId,),
         backgroundColor: TColors.accent,
         elevation: 6,
         child: const Icon(Icons.add, color: TColors.textWhite),

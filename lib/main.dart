@@ -12,27 +12,27 @@ import 'package:list_firebase/app/features/auth/presentation/pages/splash/splash
 import 'package:list_firebase/app/core/utils/theme/theme.dart';
 
 Future<void> main() async {
- WidgetsFlutterBinding.ensureInitialized();
- await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
- tz.initializeTimeZones();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  tz.initializeTimeZones();
 
- // Injeção de dependências global, uma única vez
- InitialBindings().dependencies();
+  // Injeção de dependências global, uma única vez
+  InitialBindings().dependencies();
 
-runApp(const ListTarefa());
+  runApp(const ListTarefa());
 }
 
 class ListTarefa extends StatelessWidget {
- const ListTarefa({super.key});
+  const ListTarefa({super.key});
 
- @override
- Widget build(BuildContext context) {
- return GetMaterialApp(
- theme: TAppTheme.lightTheme,
- darkTheme: TAppTheme.darkTheme,
-themeMode: ThemeMode.system,
- home: const SplashPage(), // Primeira tela
- debugShowCheckedModeBanner: false,
- );
- }
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      theme: TAppTheme.lightTheme,
+      darkTheme: TAppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const SplashPage(), // Primeira tela
+      debugShowCheckedModeBanner: false,
+    );
+  }
 }

@@ -50,12 +50,6 @@ class _TasksPageState extends State<TasksPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Task List'),
-        centerTitle: true,
-        backgroundColor: TColors.primary,
-        foregroundColor: TColors.textWhite,
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.to(() => const AddTaskPage(),arguments: userId,),
         backgroundColor: TColors.accent,

@@ -26,6 +26,8 @@ dependencies:
   firebase_auth_mocks: ^0.15.0
   mockito: ^5.5.1
   build_runner: ^2.8.0
+  device_info_plus: ^12.1.0
+  android_intent_plus: ^6.0.0
 
 dev_dependencies:
   flutter_test:

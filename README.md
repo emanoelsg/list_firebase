@@ -49,7 +49,7 @@
 - ✅ CRUD completo de tarefas
 - ✅ Notificações locais agendadas
 - ✅ UI responsiva e intuitiva
-- ✅ +90% de cobertura de testes
+- ✅ +70% de cobertura de testes
 
 ## 🧪 Testes
 

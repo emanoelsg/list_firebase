@@ -78,7 +78,6 @@ flutter test --coverage
 ## 🔄 Roadmap
 
 - [ ] Login com Google
-- [ ] Tema escuro
 - [ ] Sincronização offline
 - [ ] Integração com calendário
 

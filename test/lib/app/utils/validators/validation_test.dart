@@ -1,5 +1,6 @@
+// test/lib/app/utils/validators/validation_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:list_firebase/app/utils/validators/validation.dart';
+import 'package:list_firebase/app/core/validators/validation.dart';
 
 
 void main() {

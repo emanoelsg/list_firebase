@@ -1,4 +1,8 @@
 // app/features/notifications/service/notifications_service.dart
+import 'dart:io';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:list_firebase/app/features/notifications/utils/notification_helper.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
@@ -8,20 +12,37 @@ import 'package:timezone/data/latest.dart' as tz;
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
 
-  // Permite injetar um plugin (útil para testes)
   NotificationService({FlutterLocalNotificationsPlugin? plugin})
       : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
+
   Future<void> init() async {
     tz.initializeTimeZones();
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: androidSettings);
     await _plugin.initialize(settings);
+  }
+  Future<void> _requestExactAlarmPermissionIfNeeded() async {
+    if (!Platform.isAndroid) return;
+
+    try {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdk = androidInfo.version.sdkInt;
+      if (sdk >= 31) {
+        // Android 12+
+        final intent = const AndroidIntent(
+          action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+        );
+        await intent.launch();
+      }
+    } catch (e, st) {
+      debugPrint('Erro ao solicitar permissão de alarmes exatos: $e\n$st');
+    }
   }
 
   Future<void> scheduleTaskNotification(TaskEntity task) async {
     if (task.reminderAt == null && task.reminderTime == null) return;
+    await _requestExactAlarmPermissionIfNeeded();
 
     final androidDetails = AndroidNotificationDetails(
       'task_channel',
@@ -32,7 +53,7 @@ class NotificationService {
     );
     final details = NotificationDetails(android: androidDetails);
 
-    // Notificação única
+    // 🔹 Notificação única
     if (task.reminderAt != null) {
       await _plugin.zonedSchedule(
         NotificationHelper.baseId(task),
@@ -44,7 +65,7 @@ class NotificationService {
       );
     }
 
-    // Notificação recorrente
+    // 🔹 Notificação recorrente (diária ou semanal)
     if ((task.repeatType == 'daily' || task.repeatType == 'weekly') &&
         task.reminderTime != null) {
       final parts = task.reminderTime!.split(':');
@@ -90,8 +111,14 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }

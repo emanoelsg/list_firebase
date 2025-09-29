@@ -1,7 +1,6 @@
-// app/utils/theme/theme.dart
+// app/core/utils/theme/theme.dart
 import 'package:flutter/material.dart';
-import 'package:list_firebase/app/utils/constants/colors.dart';
-
+import 'package:list_firebase/app/core/utils/constants/colors.dart';
 
 class TAppTheme {
   TAppTheme._();
@@ -16,8 +15,11 @@ class TAppTheme {
       foregroundColor: TColors.textWhite,
       elevation: 2,
     ),
+    fontFamily: 'Poppins',
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: TColors.textPrimary),
+      headlineLarge: TextStyle(fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(fontWeight: FontWeight.w600),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -46,8 +48,11 @@ class TAppTheme {
       foregroundColor: TColors.textWhite,
       elevation: 2,
     ),
+    fontFamily: 'Poppins', // <-- aplica a fonte globalmente
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: TColors.textWhite),
+      headlineLarge: TextStyle(fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(fontWeight: FontWeight.w600),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

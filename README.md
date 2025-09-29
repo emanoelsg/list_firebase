@@ -1,5 +1,11 @@
 # 📋 Gerenciador de Atividades Diárias
 
+
+![Coverage](https://codecov.io/gh/emanoelsg/list_firebase/graph/badge.svg?token=OH5YR7MGM0)
+![Build](https://github.com/emanoelsg/list_firebase/workflows/Flutter%20CI/badge.svg)
+
+> Sistema completo de gerenciamento de tarefas com autenticação Firebase e notificações locais.
+
 > Aplicativo Flutter para gerenciamento de tarefas diárias, com autenticação de usuários, notificações personalizadas e integração com Firebase.
 
 > Aplicativo de gerenciamento de tarefas com notificações e autenticação, desenvolvido em Flutter com integração Firebase.
@@ -27,52 +33,29 @@
 ![GetX](https://img.shields.io/badge/GetX-FF5722?style=flat&logoColor=white)
 ![CI](https://img.shields.io/badge/CI-CD-blue)
 
-- **Flutter & Dart** – Desenvolvimento multiplataforma com performance nativa.  
-- **GetX** – Gerenciamento de estado reativo e navegação simplificada.  
-- **Firebase Auth & Firestore** – Autenticação segura e banco de dados em tempo real.  
-- **Notificações Locais** – Agendamento de lembretes e alertas para tarefas.  
-- **Testes Unitários** – `flutter_test`, `mocktail` e `fake_firestore` para garantir confiabilidade.  
+- **Frontend:** Flutter 3.9.0, GetX, Material Design
+- **Backend:** Firebase (Auth, Firestore, Storage)
+- **Testes:** Mocktail, Flutter Test
+- **CI/CD:** GitHub Actions, CodeCov
+- **GetX**  Gerenciamento de estado reativo 
+- **Notificações Locais** Agendamento de lembretes e alertas para tarefas.  
+- **Testes Unitários** `flutter_test`, `mocktail` e `fake_firestore` para garantir confiabilidade.  
 
 ---
 
-## ⚡ Funcionalidades Principais
+## 🚀 Recursos
 
-- **Cadastro e Login de Usuário**  
-  Autenticação via email e senha com Firebase Auth.  
+- ✅ Autenticação segura com Firebase
+- ✅ CRUD completo de tarefas
+- ✅ Notificações locais agendadas
+- ✅ UI responsiva e intuitiva
+- ✅ +90% de cobertura de testes
 
-- **CRUD de Tarefas**  
-  Criar, atualizar, deletar e listar tarefas associadas a cada usuário.  
+## 🧪 Testes
 
-- **Lembretes e Notificações**  
-  Configuração de alertas para tarefas com horário específico e repetição opcional.  
-
-- **UI Reativa**  
-  A interface atualiza automaticamente quando dados são alterados, usando GetX.
-
----
-
-## 🧪 Cobertura de Testes
-
-O projeto possui testes unitários completos, incluindo:
-
-- **AuthController & AuthRepository**  
-  - Cadastro, login e logout  
-  - Tratamento de erros e exceções  
-
-- **TaskController & TaskRepository**  
-  - Operações de CRUD de tarefas  
-  - Cancelamento e atualização de notificações  
-
-- **TaskEntity**  
-  - Métodos `toMap` e `fromMap`  
-  - Suporte ao `copyWith`  
-
-- **NotificationController**  
-  - Verificação de agendamento e cancelamento de lembretes  
-
-💡 Os testes garantem confiabilidade, facilitam manutenção e permitem evolução segura do app.
-
----
+```bash
+flutter test --coverage
+```
 
 ## 🚀 Estrutura do Projeto
 
@@ -92,25 +75,12 @@ O projeto possui testes unitários completos, incluindo:
 
 ---
 
-## 📌 Em Desenvolvimento
+## 🔄 Roadmap
 
-- Implementação de **CI/CD** para builds automáticos e deploys.  
-- Suporte a notificações recorrentes avançadas e integração com calendário.  
-- Melhorias na experiência do usuário e interface.
-
----
-
-## 📦 Como Rodar
-
-```bash
-# Clonar repositório
-git clone <REPO_URL>
-
-# Instalar dependências
-flutter pub get
-
-# Rodar aplicativo
-flutter run
+- [ ] Login com Google
+- [ ] Tema escuro
+- [ ] Sincronização offline
+- [ ] Integração com calendário
 
 ```
 [📲 Baixar Lista de Tarefas v1.0](https://github.com/emanoelsg/list_firebase/releases/latest/download/app-release.apk)

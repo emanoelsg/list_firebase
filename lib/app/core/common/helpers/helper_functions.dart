@@ -1,4 +1,4 @@
-// app/utils/helpers/helper_functions.dart
+// app/core/common/helpers/helper_functions.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,6 +15,8 @@ class THelperFunctions {
 
   static void navigateToScreen(BuildContext context, Widget screen) {
     Get.to(() => screen);
+  } static void navigateToScreenClosing(BuildContext context, Widget screen) {
+    Get.off(() => screen);
   }
 
   static bool isDarkMode(BuildContext context) {

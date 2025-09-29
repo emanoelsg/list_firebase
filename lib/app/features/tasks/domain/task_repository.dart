@@ -6,4 +6,5 @@ abstract class TaskRepository {
   Future<void> addTask(String userId, TaskEntity task);
   Future<void> updateTask(String userId, TaskEntity task);
   Future<void> deleteTask(String userId, String taskId);
+  Stream<List<TaskEntity>> watchTasks(String userId);
 }

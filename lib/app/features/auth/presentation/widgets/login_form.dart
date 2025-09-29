@@ -1,11 +1,14 @@
-// app/features/auth/presentation/pages/login/login_widgets/login_form.dart
+// app/features/auth/presentation/widgets/login_form.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:list_firebase/app/core/common/helpers/helper_functions.dart';
+import 'package:list_firebase/app/core/mixins/base_state.dart';
+import 'package:list_firebase/app/core/utils/constants/sizes.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/auth/presentation/pages/register/register_page.dart';
-import 'package:list_firebase/app/utils/constants/sizes.dart';
-import 'package:list_firebase/app/utils/helpers/helper_functions.dart';
 
+/// A widget that represents the login form container.
+/// It includes the email and password fields, login button, and a link to the registration page.
 class LoginFormContainer extends StatelessWidget {
   final AuthController authController;
   final GlobalKey<FormState> formKey;
@@ -22,12 +25,13 @@ class LoginFormContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
+    // Get the screen height for responsive spacing
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: height),
+      constraints: BoxConstraints(minHeight: screenHeight),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(TSizes.defaultSpace),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.only(
@@ -37,9 +41,9 @@ class LoginFormContainer extends StatelessWidget {
         ),
         child: Column(
           children: [
-            SizedBox(height: height * 0.06),
+            SizedBox(height: screenHeight * 0.06),
 
-            /// Formulário
+            /// Login Form
             Form(
               key: formKey,
               child: Column(
@@ -47,30 +51,29 @@ class LoginFormContainer extends StatelessWidget {
                   TextFormField(
                     controller: emailController,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter your email' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter your email' : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TSizes.spaceBtwInputFields),
                   TextFormField(
                     controller: passwordController,
                     decoration: const InputDecoration(labelText: 'Password'),
                     obscureText: true,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter your password' : null,
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter your password' : null,
                   ),
                 ],
               ),
             ),
 
-            SizedBox(height: height * 0.05),
+            SizedBox(height: screenHeight * 0.05),
 
-            /// Botão de Login / Loading — agora reativo de forma mais previsível
-            Obx(() => _buildLoginButton()),
+            /// Login Button
+            _buildLoginButton(),
 
-            SizedBox(height: height * 0.075),
-            const SizedBox(height: TSizes.defaultSpace),
+            SizedBox(height: screenHeight * 0.075),
 
-            /// Link para cadastro
+            /// Link to Registration
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -86,37 +89,38 @@ class LoginFormContainer extends StatelessWidget {
                 ),
               ],
             ),
-
-            SizedBox(height: height * 0.06),
+            SizedBox(height: screenHeight * 0.06),
           ],
         ),
       ),
     );
   }
 
+  /// Builds the login button, which changes to a loading indicator
+  /// based on the controller's state.
   Widget _buildLoginButton() {
-    if (authController.isLoading is RxBool
-        ? (authController.isLoading as RxBool).value
-        : authController.isLoading) {
-      return const CircularProgressIndicator(color: Colors.deepPurple);
-    }
+    return Obx(() {
+      final isLoading = authController.state.value == ControllerState.loading;
 
-    return ElevatedButton(
-      key: const Key('login_button'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        minimumSize: const Size.fromHeight(48),
-      ),
-      onPressed: () {
-        if (formKey.currentState?.validate() ?? false) {
-          authController.loginWithEmail(
-            emailController.text.trim(),
-            passwordController.text,
-          );
-        }
-      },
-      child: const Text('Login'),
-    );
+      return isLoading
+          ? const CircularProgressIndicator(color: Colors.deepPurple)
+          : ElevatedButton(
+              key: const Key('login_button'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                minimumSize: const Size.fromHeight(48),
+              ),
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  authController.loginWithEmail(
+                    emailController.text.trim(),
+                    passwordController.text.trim(),
+                  );
+                }
+              },
+              child: const Text('Login'),
+            );
+    });
   }
 }

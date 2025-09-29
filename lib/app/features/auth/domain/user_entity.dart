@@ -7,6 +7,7 @@ class UserEntity {
   });
 
   final String id;
+  String get uid => id;
   final String email;
   final String? name;
   @override

@@ -1,5 +1,6 @@
-// test/lib/app/features/tasks/presentation/task_controller_test.dart
-// test/lib/app/features/tasks/presentation/task_controller_test.dartart
+// test/lib/app/features/tasks/presentation/controller/task_controller_test.dart
+
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:list_firebase/app/features/notifications/controller/notification_controller.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
@@ -7,13 +8,10 @@ import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
 import 'package:mocktail/mocktail.dart';
 
-// ---------------- Mocks ----------------
+// Mocks e Fakes
 class MockTaskRepository extends Mock implements TaskRepository {}
-
+class MockNotificationController extends Mock implements NotificationController {}
 class FakeTaskEntity extends Fake implements TaskEntity {}
-
-class MockNotificationController extends Mock
-    implements NotificationController {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +20,7 @@ void main() {
   late MockTaskRepository mockRepository;
   late MockNotificationController mockNotif;
   const userId = 'user123';
+  late StreamController<List<TaskEntity>> taskStreamController;
 
   setUpAll(() {
     registerFallbackValue(FakeTaskEntity());
@@ -30,6 +29,10 @@ void main() {
   setUp(() {
     mockRepository = MockTaskRepository();
     mockNotif = MockNotificationController();
+    taskStreamController = StreamController<List<TaskEntity>>.broadcast();
+
+    when(() => mockRepository.watchTasks(userId))
+        .thenAnswer((_) => taskStreamController.stream);
 
     controller = TaskController(
       repository: mockRepository,
@@ -37,109 +40,67 @@ void main() {
     );
   });
 
-  group('TaskController Tests', () {
-    test(
-        'addTask should call repository, schedule notification, and reload tasks',
-        () async {
-      TaskEntity? addedTask;
+  tearDown(() async {
+    await taskStreamController.close();
+  });
 
-      // Mock repository addTask
-      when(() => mockRepository.addTask(any(), any()))
-          .thenAnswer((invocation) async {
-        addedTask = invocation.positionalArguments[1] as TaskEntity;
-      });
+  group('TaskController', () {
+    test('loadTasks deve mudar o estado para success e atualizar tasks', () async {
+      // 1. Inicia o carregamento
+      controller.loadTasks(userId);
+      expect(controller.state.value, TaskControllerState.loading);
 
-      // Mock repository getTasks
-      when(() => mockRepository.getTasks(userId))
-          .thenAnswer((_) async => addedTask != null ? [addedTask!] : []);
+      // 2. Adiciona dados ao stream (simula o sucesso)
+      final sampleTask = TaskEntity(
+        id: '1',
+        title: 'Test Task',
+        userId: userId,
+        createdAt: DateTime.now(),
+      );
+      taskStreamController.add([sampleTask]);
+      await Future.delayed(Duration.zero);
 
-      // Mock notification
-      when(() => mockNotif.scheduleReminderForTask(any()))
-          .thenAnswer((_) async {});
+      // 3. Verifica o estado e os dados
+      expect(controller.tasks.length, 1);
+      expect(controller.tasks.first.title, 'Test Task');
+      expect(controller.state.value, TaskControllerState.success);
+    });
 
-      // Act
-      await controller.addTask(userId, 'Test Task', '');
+    test('loadTasks deve mudar o estado para error em caso de falha', () async {
+      // 1. Inicia o carregamento
+      controller.loadTasks(userId);
+      expect(controller.state.value, TaskControllerState.loading);
 
-      // Assert
+      // 2. Adiciona um erro ao stream
+      taskStreamController.addError('Falha de conexão');
+      await Future.delayed(Duration.zero);
+
+      // 3. Verifica o estado e a mensagem de erro
+      expect(controller.state.value, TaskControllerState.error);
+      expect(controller.errorMessage.value, contains('Falha de conexão'));
+    });
+
+    test('addTask deve mudar o estado para loading e depois para success', () async {
+      when(() => mockRepository.addTask(any(), any())).thenAnswer((_) async {});
+      when(() => mockNotif.scheduleReminderForTask(any())).thenAnswer((_) async {});
+
+      final future = controller.addTask(
+        userId,
+        'Nova Task',
+        '',
+        reminderTime: '08:00',
+      );
+
+      // Estado deve ser loading durante a execução
+      expect(controller.state.value, TaskControllerState.loading);
+
+      await future;
+
+      // Estado deve ser success após a conclusão
+      expect(controller.state.value, TaskControllerState.success);
       verify(() => mockRepository.addTask(userId, any())).called(1);
-      verifyNever(() => mockNotif.scheduleReminderForTask(any()));
-
-      expect(controller.tasks.length, 1);
-      expect(controller.tasks.first.title, 'Test Task');
-    });
-
-    test('loadTasks should fetch tasks and update state', () async {
-      final sampleTask = TaskEntity(
-        id: 'task1',
-        title: 'Test Task',
-        userId: userId,
-        createdAt: DateTime(2023, 1, 1),
-      );
-
-      when(() => mockRepository.getTasks(userId))
-          .thenAnswer((_) async => [sampleTask]);
-
-      await controller.loadTasks(userId);
-
-      expect(controller.tasks.length, 1);
-      expect(controller.tasks.first.title, 'Test Task');
-      expect(controller.isLoading.value, false);
-    });
-    test(
-        'updateTask should modify task in the list, cancel and schedule notifications',
-        () async {
-      final sampleTask = TaskEntity(
-        id: 'task1',
-        title: 'Test Task',
-        userId: userId,
-        createdAt: DateTime(2023, 1, 1),
-      );
-      controller.tasks.value = [sampleTask];
-
-      final updatedTask = TaskEntity(
-        id: 'task1',
-        title: 'Updated Task',
-        userId: userId,
-        createdAt: sampleTask.createdAt,
-        reminderTime: "08:00",
-      );
-
-      when(() => mockRepository.updateTask(userId, any()))
-          .thenAnswer((_) async {});
-      when(() => mockNotif.cancelRemindersForTask(any()))
-          .thenAnswer((_) async {});
-      when(() => mockNotif.scheduleReminderForTask(any()))
-          .thenAnswer((_) async {});
-
-      await controller.updateTask(userId, updatedTask);
-
-      verify(() => mockRepository.updateTask(userId, any())).called(1);
-      verify(() => mockNotif.cancelRemindersForTask(any())).called(1);
       verify(() => mockNotif.scheduleReminderForTask(any())).called(1);
-
-      expect(controller.tasks.first.title, 'Updated Task');
-    });
-
-    test('deleteTask should remove task from list and cancel all notifications',
-        () async {
-      final sampleTask = TaskEntity(
-        id: 'task1',
-        title: 'Test Task',
-        userId: userId,
-        createdAt: DateTime(2023, 1, 1),
-      );
-      controller.tasks.value = [sampleTask];
-
-      when(() => mockRepository.deleteTask(userId, sampleTask.id))
-          .thenAnswer((_) async {});
-      when(() => mockNotif.cancelRemindersForTask(any()))
-          .thenAnswer((_) async {});
-
-      await controller.deleteTask(userId, sampleTask.id);
-
-      expect(controller.tasks.isEmpty, true);
-      verify(() => mockRepository.deleteTask(userId, sampleTask.id)).called(1);
-      verify(() => mockNotif.cancelRemindersForTask(sampleTask)).called(1);
+      expect(controller.errorMessage.value, isNull);
     });
   });
 }

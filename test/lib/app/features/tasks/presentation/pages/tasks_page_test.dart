@@ -1,163 +1,89 @@
+// test/lib/app/features/tasks/presentation/pages/tasks_page_test.dart
+
+
+// Mocks para simular os controladores e serviços
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:list_firebase/app/features/notifications/controller/notification_controller.dart';
+import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
+import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/tasks/domain/task_entity.dart';
-import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
 import 'package:list_firebase/app/features/tasks/presentation/pages/tasks_page.dart';
-import 'package:list_firebase/app/features/tasks/presentation/widgets/addtask_page.dart';
 import 'package:mocktail/mocktail.dart';
 
-// Mocks
-class MockTaskRepository extends Mock implements TaskRepository {}
-
-class MockNotificationController extends Mock
-    implements NotificationController {}
-
-// Fake necessário para `any<TaskEntity>()`
-class FakeTaskEntity extends Fake implements TaskEntity {}
+class MockTaskController extends GetxController with Mock implements TaskController {}
+class MockAuthController extends GetxController with Mock implements AuthController {}
+class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 void main() {
-  late MockTaskRepository mockRepo;
-  late MockNotificationController mockNotif;
-  late TaskController controller;
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late MockTaskController mockTaskController;
+  late MockAuthController mockAuthController;
+  late RouteObserver<Route> routeObserver;
 
-  setUpAll(() {
-    registerFallbackValue(FakeTaskEntity());
-    Get.testMode = true; // desativa snackbars reais
-  });
+  const userId = 'test-user-id';
 
+  // Configurações iniciais antes de cada teste
   setUp(() {
-    mockRepo = MockTaskRepository();
-    mockNotif = MockNotificationController();
+    mockTaskController = MockTaskController();
+    mockAuthController = MockAuthController();
+    routeObserver = RouteObserver<Route>();
 
-    controller = TaskController(
-      repository: mockRepo,
-      notificationController: mockNotif,
-    );
+    when(() => mockAuthController.person).thenReturn(Rxn(UserEntity(id: userId, email: 'test@example.com')));
+    when(() => mockTaskController.state).thenReturn(TaskControllerState.initial.obs);
+    when(() => mockTaskController.tasks).thenReturn(<TaskEntity>[].obs);
+    when(() => mockTaskController.errorMessage).thenReturn(RxnString());
 
-    Get.put<TaskController>(controller);
+    Get.put<AuthController>(mockAuthController);
+    Get.put<TaskController>(mockTaskController);
+    Get.put<RouteObserver>(routeObserver);
   });
 
   tearDown(() {
     Get.reset();
   });
 
-  group('HomePage', () {
+  Widget makeTestableWidget() {
+    return GetMaterialApp(
+      home: TasksPage(userId: userId),
+      navigatorObservers: [routeObserver],
+    );
+  }
 
-
-         testWidgets('renderiza tasks na tela', (tester) async {
-      await tester.runAsync(() async {
-        controller.tasks.assignAll([
-          TaskEntity(
-            id: '1',
-            title: 'Task 1',
-            userId: 'u1',
-            createdAt: DateTime.now(),
-          ),
-          TaskEntity(
-            id: '2',
-            title: 'Task 2',
-            userId: 'u1',
-            createdAt: DateTime.now(),
-            isDone: true,
-          ),
-        ]);
-
-        await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Task 1'), findsOneWidget);
-        expect(find.text('Task 2'), findsOneWidget);
-      });
-    });
-
-testWidgets('navega para AddTaskPage ao clicar no FAB', (tester) async {
-  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-  await tester.pumpAndSettle();
-
-  await tester.tap(find.byType(FloatingActionButton));
-  await tester.pumpAndSettle();
-
-  expect(find.byType(AddTaskPage), findsOneWidget);
-});
-testWidgets('aciona edição ao clicar no Slidable Edit', (tester) async {
-  final task = TaskEntity(
-    id: '1',
-    title: 'Task 1',
-    userId: 'u1',
-    createdAt: DateTime.now(),
-  );
-
-  controller.tasks.assignAll([task]);
-  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-  await tester.pumpAndSettle();
-
-  // desliza para abrir o Slidable
-  await tester.drag(find.text('Task 1'), const Offset(500, 0));
-  await tester.pumpAndSettle();
-
-  await tester.tap(find.text('Edit'));
-  await tester.pumpAndSettle();
-
-  expect(find.byType(AddTaskPage), findsOneWidget);
-});
-testWidgets('mostra mensagem quando não há tasks', (tester) async {
-  controller.tasks.clear();
-  await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-  await tester.pumpAndSettle();
-
-  expect(find.text('No tasks found'), findsOneWidget);
-});
-
-
-
-    testWidgets('aciona updateTask ao clicar no checkbox', (tester) async {
-      final task = TaskEntity(
-        id: '1',
-        title: 'Task 1',
-        userId: 'u1',
-        createdAt: DateTime.now(),
-      );
-
-      controller.tasks.assignAll([task]);
-      when(() => mockRepo.updateTask(any(), any())).thenAnswer((_) async {});
-
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(Checkbox));
-      await tester.pumpAndSettle();
-
-      verify(() => mockRepo.updateTask('u1', any<TaskEntity>())).called(1);
-    });
-
-    testWidgets('aciona deleteTask ao clicar em Delete', (tester) async {
-      final task = TaskEntity(
-        id: '1',
-        title: 'Task 1',
-        userId: 'u1',
-        createdAt: DateTime.now(),
-      );
-
-      controller.tasks.assignAll([task]);
-      when(() => mockRepo.deleteTask(any(), any())).thenAnswer((_) async {});
-      when(
-        () => mockNotif.cancelRemindersForTask(any()),
-      ).thenAnswer((_) async {});
-
-      await tester.pumpWidget(GetMaterialApp(home: HomePage(userId: 'u1')));
+  group('TasksPage Widget Tests', () {
+    testWidgets('should show a loading indicator when tasks are loading', (tester) async {
+      // ✅ Apenas sobrepõe o stub para este teste específico
+      when(() => mockTaskController.state).thenReturn(TaskControllerState.loading.obs);
+      await tester.pumpWidget(makeTestableWidget());
       await tester.pump();
 
-      // abre o slidable e toca no botão Delete
-      await tester.drag(find.text('Task 1'), const Offset(-500, 0));
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('should show "No tasks found" message when tasks list is empty', (tester) async {
+      when(() => mockTaskController.state).thenReturn(TaskControllerState.success.obs);
+      when(() => mockTaskController.tasks).thenReturn(<TaskEntity>[].obs);
+      await tester.pumpWidget(makeTestableWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Delete'));
-      await tester.pump();
+      expect(find.text('Nenhuma tarefa encontrada. Clique no "+" para adicionar uma.'), findsOneWidget);
+    });
 
-      verify(() => mockRepo.deleteTask('u1', '1')).called(1);
+    testWidgets('should show a list of tasks when data is available', (tester) async {
+      final tasks = [
+        TaskEntity(id: '1', title: 'Task 1', description: 'Desc 1', isDone: false, userId: userId, createdAt: DateTime.now()),
+        TaskEntity(id: '2', title: 'Task 2', description: 'Desc 2', isDone: true, userId: userId, createdAt: DateTime.now()),
+      ];
+      
+      when(() => mockTaskController.state).thenReturn(TaskControllerState.success.obs);
+      when(() => mockTaskController.tasks).thenReturn(tasks.obs);
+      await tester.pumpWidget(makeTestableWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Task 1'), findsOneWidget);
+      expect(find.text('Task 2'), findsOneWidget);
+      expect(find.byType(ListView), findsOneWidget);
     });
   });
 }

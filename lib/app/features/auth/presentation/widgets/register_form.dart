@@ -1,11 +1,9 @@
-// app/features/auth/presentation/pages/register/register_form/form_container.dart
+// app/features/auth/presentation/widgets/register_form.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:list_firebase/app/common/widgets/form_divider.dart';
+import 'package:list_firebase/app/core/utils/constants/sizes.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
-import 'package:list_firebase/app/features/auth/presentation/pages/login/login_page.dart';
-import 'package:list_firebase/app/utils/constants/sizes.dart';
-import 'package:list_firebase/app/utils/validators/validation.dart';
+import 'package:list_firebase/app/core/mixins/base_state.dart';
 
 class RegisterFormContainer extends StatelessWidget {
   final AuthController authController;
@@ -13,7 +11,6 @@ class RegisterFormContainer extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
   final TextEditingController passwordController;
-  final TextEditingController confirmPasswordController;
 
   const RegisterFormContainer({
     super.key,
@@ -22,16 +19,16 @@ class RegisterFormContainer extends StatelessWidget {
     required this.nameController,
     required this.emailController,
     required this.passwordController,
-    required this.confirmPasswordController,
   });
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return SingleChildScrollView(
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: screenHeight),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(TSizes.defaultSpace),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.only(
@@ -41,52 +38,35 @@ class RegisterFormContainer extends StatelessWidget {
         ),
         child: Column(
           children: [
-            SizedBox(height: screenHeight * 0.07),
+            SizedBox(height: screenHeight * 0.06),
 
-            /// Formulário
+            /// Register Form
             Form(
               key: formKey,
               child: Column(
                 children: [
                   TextFormField(
                     controller: nameController,
-                    validator: TValidator.validateUsername,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Name'),
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter your name' : null,
                   ),
                   const SizedBox(height: TSizes.spaceBtwInputFields),
                   TextFormField(
                     controller: emailController,
-                    validator: TValidator.validateEmail,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter your email' : null,
                   ),
                   const SizedBox(height: TSizes.spaceBtwInputFields),
                   TextFormField(
                     controller: passwordController,
+                    decoration: const InputDecoration(labelText: 'Password'),
                     obscureText: true,
-                    validator: TValidator.validatePassword,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline_rounded),
-                    ),
-                  ),
-                  const SizedBox(height: TSizes.spaceBtwInputFields),
-                  TextFormField(
-                    controller: confirmPasswordController,
-                    obscureText: true,
-                    validator: (value) => TValidator.validateConfirmPassword(
-                      password: passwordController.text,
-                      confirmPassword: value,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm Password',
-                      prefixIcon: Icon(Icons.lock_outline_rounded),
-                    ),
+                    validator: (value) =>
+                        value == null || value.isEmpty || value.length < 6
+                            ? 'Password must be at least 6 characters'
+                            : null,
                   ),
                 ],
               ),
@@ -94,62 +74,55 @@ class RegisterFormContainer extends StatelessWidget {
 
             SizedBox(height: screenHeight * 0.05),
 
-            /// Botão ou Loading
+            /// Register Button
             Obx(() => _buildRegisterButton()),
 
-            const SizedBox(height: 48),
-            const TFormDivider(dividerText: 'Or'),
-            const SizedBox(height: TSizes.defaultSpace),
-            SizedBox(height: screenHeight * 0.05),
+            SizedBox(height: screenHeight * 0.075),
 
-            /// Link para login
+            /// Link to Login
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Already have an account?'),
+                const Text("Already have an account?"),
                 TextButton(
-                  onPressed: () => Get.to(() => const LoginPage()),
-                  child: const Text('Login'),
+                  onPressed: () {
+                    Get.back(); // Navigate back to the login page
+                  },
+                  child: const Text('Sign In'),
                 ),
               ],
             ),
+            SizedBox(height: screenHeight * 0.06),
           ],
         ),
       ),
     );
   }
 
+  /// Builds the register button, which changes to a loading indicator
+  /// based on the controller's state.
   Widget _buildRegisterButton() {
-    final isLoading = authController.isLoading;
+    final isLoading = authController.state.value == ControllerState.loading;
 
-    return ElevatedButton(
-      key: const Key('register_button'),
-      onPressed: isLoading
-          ? null
-          : () {
+    return isLoading
+        ? const CircularProgressIndicator(color: Colors.deepPurple)
+        : ElevatedButton(
+            key: const Key('register_button'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              minimumSize: const Size.fromHeight(48),
+            ),
+            onPressed: () {
               if (formKey.currentState?.validate() ?? false) {
                 authController.signUp(
                   nameController.text.trim(),
                   emailController.text.trim(),
-                  passwordController.text,
+                  passwordController.text.trim(),
                 );
               }
             },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        minimumSize: const Size.fromHeight(48),
-      ),
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text('Register'),
-    );
+            child: const Text('Register'),
+          );
   }
 }

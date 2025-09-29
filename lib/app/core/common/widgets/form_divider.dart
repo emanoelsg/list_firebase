@@ -1,7 +1,7 @@
-// app/common/widgets/form_divider.dart
+// app/core/common/widgets/form_divider.dart
 import 'package:flutter/material.dart';
-import 'package:list_firebase/app/utils/constants/colors.dart';
-import 'package:list_firebase/app/utils/helpers/helper_functions.dart';
+import 'package:list_firebase/app/core/utils/constants/colors.dart';
+import 'package:list_firebase/app/core/common/helpers/helper_functions.dart';
 
 class TFormDivider extends StatelessWidget {
   const TFormDivider({super.key, required this.dividerText});

@@ -5,6 +5,19 @@
 > Aplicativo de gerenciamento de tarefas com notificações e autenticação, desenvolvido em Flutter com integração Firebase.
 [![codecov](https://codecov.io/gh/emanoelsg/list_firebase/graph/badge.svg?token=OH5YR7MGM0)](https://codecov.io/gh/emanoelsg/list_firebase)
 ---
+---
+
+## 🖼 Screenshots
+
+
+<p align="center">
+  <img src="flutter_01.png" alt="Edit Screen" width="200"/>
+  <img src="flutter_02.png" alt="Login Screen" width="200"/>
+  <img src="flutter_03.png" alt="Register Screen" width="200"/>
+  <img src="flutter_04.png" alt="Home Page" width="200"/>
+</p>
+
+
 
 ## 🛠 Tecnologias Utilizadas
 

@@ -43,7 +43,7 @@ void main() {
       when(() => mockRepository.signIn(any(), any())).thenAnswer((_) async => mockUserEntity);
 
       // Act
-      await controller.loginWithEmail('test@mail.com', 'password123');
+      await controller.loginWithEmail('test@gmail.com', 'password123');
 
       // Assert
       expect(controller.state.value, ControllerState.success);
@@ -56,7 +56,7 @@ void main() {
       when(() => mockRepository.signUp(any(), any(), any())).thenAnswer((_) async => mockUserEntity);
       
       // Act
-      final future = controller.signUp('Test User', 'test@mail.com', 'password123');
+      final future = controller.signUp('Test User', 'test@gmail.com', 'password123');
       
       // Assert the initial state is loading
       expect(controller.state.value, ControllerState.loading);

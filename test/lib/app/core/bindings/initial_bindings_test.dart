@@ -15,6 +15,7 @@ import 'package:list_firebase/app/features/notifications/controller/notification
 import 'package:list_firebase/app/features/notifications/service/notifications_service.dart';
 import 'package:list_firebase/app/features/tasks/data/task_repository_impl.dart';
 import 'package:list_firebase/app/features/tasks/presentation/controller/task_controller.dart';
+import 'package:list_firebase/app/features/tasks/domain/task_repository.dart';
 
 class MockAuthRepositoryImpl extends Mock implements AuthRepositoryImpl {}
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -29,10 +30,14 @@ class MockTaskController extends Mock implements TaskController {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
- setUp(() {
+  setUp(() {
     Get.testMode = true;
-    // Mocka o método init para evitar erro de tipo
     Get.reset();
+    // Mocka todos os repositórios e serviços para evitar inicialização real
+    Get.put<AuthRepositoryImpl>(MockAuthRepositoryImpl());
+    Get.put<AuthRepository>(MockAuthRepository());
+    Get.put<TaskRepositoryImpl>(MockTaskRepositoryImpl());
+    Get.put<TaskRepository>(MockTaskRepositoryImpl());
     Get.put<NotificationService>(MockNotificationService());
     registerNotificationServiceInit();
   });

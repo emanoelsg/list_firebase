@@ -7,47 +7,65 @@ import 'package:list_firebase/app/features/auth/domain/user_entity.dart';
 import 'package:list_firebase/app/features/auth/presentation/controller/auth_controller.dart';
 import 'package:list_firebase/app/features/auth/presentation/pages/register/register_page.dart';
 import 'package:list_firebase/app/features/auth/presentation/widgets/login_form.dart';
-import 'package:mocktail/mocktail.dart';
 
 // Mock do AuthController para simular seu comportamento
-class MockAuthController extends GetxController with BaseState implements AuthController {
-  @override
-  Rxn<UserEntity> person = Rxn<UserEntity>();
 
+class FakeAuthController extends GetxController implements AuthController {
+  @override
+  final Rxn<UserEntity> person = Rxn<UserEntity>();
+  @override
+  final state = ControllerState.initial.obs;
   @override
   bool get isLoggedIn => person.value != null;
-
   @override
-  Future<void> loginWithEmail(String email, String password) async {}
+  Future<void> loginWithEmail(String email, String password) async {
+    person.value = UserEntity(id: '1', email: email);
+    state.value = ControllerState.success;
+  }
   @override
-  Future<void> signUp(String name, String email, String password) async {}
+  Future<void> signUp(String name, String email, String password) async {
+    person.value = UserEntity(id: '1', email: email, name: name);
+    state.value = ControllerState.success;
+  }
   @override
-  Future<void> signOut() async {}
+  Future<void> signOut() async {
+    person.value = null;
+  }
   @override
   Future<void> getCurrentUser() async {}
-
+  @override
+  UserEntity? get currentUser => person.value;
   
   @override
-  UserEntity? get currentUser => throw UnimplementedError();
+  Widget buildWhen({required Widget Function() onSuccess, Widget Function()? onLoading, Widget Function(String p1)? onError}) {
+
+    throw UnimplementedError();
+  }
   
+  @override
+  Rxn<String> get errorMessage => throw UnimplementedError();
 }
 
 void main() {
+
   TestWidgetsFlutterBinding.ensureInitialized();
-  
-  late MockAuthController mockAuthController;
+  late FakeAuthController fakeAuthController;
   late GlobalKey<FormState> formKey;
   late TextEditingController emailController;
   late TextEditingController passwordController;
-
+  final mockAuthController = FakeAuthController();
   setUp(() {
     Get.testMode = true;
-    mockAuthController = MockAuthController();
+    fakeAuthController = FakeAuthController();
     formKey = GlobalKey<FormState>();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-    // Estado inicial
-    mockAuthController.state.value = ControllerState.initial;
+    if (!Get.isRegistered<RouteObserver>()) {
+      Get.put<RouteObserver>(RouteObserver<PageRoute>());
+    }
+    if (!Get.isRegistered<AuthController>()) {
+      Get.put<AuthController>(fakeAuthController);
+    }
   });
 
   tearDown(() {
@@ -66,18 +84,13 @@ void main() {
           passwordController: passwordController,
         ),
       ),
-      // Usado para testar a navegação
       navigatorObservers: [Get.find<RouteObserver>()],
     );
   }
 
   group('LoginFormContainer', () {
     testWidgets('should render login form with all widgets', (tester) async {
-  // Simula o estado inicial do controlador
-  mockAuthController.state.value = ControllerState.initial;
-  await tester.pumpWidget(makeTestableWidget());
-
-      // Verifica se todos os widgets do formulário estão presentes
+      await tester.pumpWidget(makeTestableWidget());
       expect(find.byType(Form), findsOneWidget);
       expect(find.byType(TextFormField), findsNWidgets(2));
       expect(find.byType(ElevatedButton), findsOneWidget);
@@ -87,56 +100,34 @@ void main() {
     });
 
     testWidgets('should show validation errors for empty fields', (tester) async {
-  // Simula o estado inicial do controlador
-  mockAuthController.state.value = ControllerState.initial;
-  await tester.pumpWidget(makeTestableWidget());
-
-      // Toca no botão de login sem preencher os campos
+      await tester.pumpWidget(makeTestableWidget());
       await tester.tap(find.byType(ElevatedButton));
       await tester.pump();
-
-      // Verifica se as mensagens de erro de validação aparecem
       expect(find.text('Please enter your email'), findsOneWidget);
       expect(find.text('Please enter your password'), findsOneWidget);
     });
 
     testWidgets('should call loginWithEmail on controller with valid data', (tester) async {
-  // Simula o estado inicial e o retorno do método `loginWithEmail`
-  mockAuthController.state.value = ControllerState.initial;
-  await tester.pumpWidget(makeTestableWidget());
-
-      // Preenche os campos com dados válidos
+      await tester.pumpWidget(makeTestableWidget());
       await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
       await tester.enterText(find.byType(TextFormField).last, 'password123');
-
-      // Toca no botão de login
       await tester.tap(find.byType(ElevatedButton));
       await tester.pump();
-
-      // Verifica se o método do controlador foi chamado com os dados corretos
-      verify(() => mockAuthController.loginWithEmail('test@example.com', 'password123')).called(1);
+      expect(fakeAuthController.person.value?.email, 'test@example.com');
+      expect(fakeAuthController.state.value, ControllerState.success);
     });
 
     testWidgets('should show a loading indicator when controller is loading', (tester) async {
-  // Simula o estado de loading do controlador
-  mockAuthController.state.value = ControllerState.loading;
-  await tester.pumpWidget(makeTestableWidget());
-
-      // Verifica se o `CircularProgressIndicator` é exibido
+      fakeAuthController.state.value = ControllerState.loading;
+      await tester.pumpWidget(makeTestableWidget());
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byType(ElevatedButton), findsNothing);
     });
 
     testWidgets('should navigate to RegisterPage when Sign Up button is pressed', (tester) async {
-  // Simula o estado inicial do controlador
-  mockAuthController.state.value = ControllerState.initial;
-  await tester.pumpWidget(makeTestableWidget());
-
-      // Toca no botão de cadastro
+      await tester.pumpWidget(makeTestableWidget());
       await tester.tap(find.text('Sign Up'));
-      await tester.pumpAndSettle(); // Espera a animação de navegação terminar
-
-      // Verifica se a `RegisterPage` está agora na tela
+      await tester.pumpAndSettle();
       expect(find.byType(RegisterPage), findsOneWidget);
     });
   });

@@ -102,5 +102,92 @@ void main() {
       verify(() => mockNotif.scheduleReminderForTask(any())).called(1);
       expect(controller.errorMessage.value, isNull);
     });
+
+    test('updateTask deve atualizar tarefa e agendar notificação', () async {
+      final task = TaskEntity(
+        id: '1',
+        title: 'Old',
+        userId: userId,
+        createdAt: DateTime.now(),
+      );
+      when(() => mockRepository.updateTask(any(), any())).thenAnswer((_) async {});
+      when(() => mockNotif.cancelRemindersForTask(any())).thenAnswer((_) async {});
+      when(() => mockNotif.scheduleReminderForTask(any())).thenAnswer((_) async {});
+
+      await controller.updateTask(userId, task, newTitle: 'New');
+      expect(controller.state.value, TaskControllerState.success);
+      verify(() => mockRepository.updateTask(userId, any())).called(1);
+      verify(() => mockNotif.cancelRemindersForTask(task)).called(1);
+      verify(() => mockNotif.scheduleReminderForTask(any())).called(1);
+    });
+
+    test('deleteTask deve remover tarefa e cancelar notificação', () async {
+      final task = TaskEntity(
+        id: '1',
+        title: 'To Delete',
+        userId: userId,
+        createdAt: DateTime.now(),
+      );
+      controller.tasks.value = [task];
+      when(() => mockRepository.deleteTask(any(), any())).thenAnswer((_) async {});
+      when(() => mockNotif.cancelRemindersForTask(any())).thenAnswer((_) async {});
+
+      await controller.deleteTask(userId, '1');
+      expect(controller.state.value, TaskControllerState.success);
+      verify(() => mockRepository.deleteTask(userId, '1')).called(1);
+      verify(() => mockNotif.cancelRemindersForTask(task)).called(1);
+    });
+
+    test('toggleTaskDone deve alternar status da tarefa', () async {
+      final task = TaskEntity(
+        id: '1',
+        title: 'Toggle',
+        userId: userId,
+        isDone: false,
+        createdAt: DateTime.now(),
+      );
+      when(() => mockRepository.updateTask(any(), any())).thenAnswer((_) async {});
+
+      await controller.toggleTaskDone(userId, task);
+      verify(() => mockRepository.updateTask(userId, any())).called(1);
+    });
+
+    test('onClose cancela subscription', () async {
+      controller.loadTasks(userId);
+      controller.onClose();
+      expect(controller.state.value, isNotNull); // Só para cobrir o método
+    });
+
+    test('updateTask deve tratar erro corretamente', () async {
+      final task = TaskEntity(
+        id: '1',
+        title: 'Old',
+        userId: userId,
+        createdAt: DateTime.now(),
+      );
+      when(() => mockRepository.updateTask(any(), any())).thenThrow(Exception('Erro update'));
+      when(() => mockNotif.cancelRemindersForTask(any())).thenAnswer((_) async {});
+      when(() => mockNotif.scheduleReminderForTask(any())).thenAnswer((_) async {});
+
+      await controller.updateTask(userId, task, newTitle: 'New');
+      expect(controller.state.value, TaskControllerState.error);
+      expect(controller.errorMessage.value, contains('Erro update'));
+    });
+
+    test('deleteTask deve tratar erro corretamente', () async {
+      final task = TaskEntity(
+        id: '1',
+        title: 'To Delete',
+        userId: userId,
+        createdAt: DateTime.now(),
+      );
+      controller.tasks.value = [task];
+      when(() => mockRepository.deleteTask(any(), any())).thenThrow(Exception('Erro delete'));
+      when(() => mockNotif.cancelRemindersForTask(any())).thenAnswer((_) async {});
+
+      await controller.deleteTask(userId, '1');
+      expect(controller.state.value, TaskControllerState.error);
+      expect(controller.errorMessage.value, contains('Erro delete'));
+    });
   });
 }

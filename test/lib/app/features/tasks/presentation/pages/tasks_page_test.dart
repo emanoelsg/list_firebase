@@ -34,6 +34,7 @@ void main() {
     when(() => mockTaskController.state).thenReturn(TaskControllerState.initial.obs);
     when(() => mockTaskController.tasks).thenReturn(<TaskEntity>[].obs);
     when(() => mockTaskController.errorMessage).thenReturn(RxnString());
+    when(() => mockTaskController.message).thenReturn(RxnString());
 
     Get.put<AuthController>(mockAuthController);
     Get.put<TaskController>(mockTaskController);

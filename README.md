@@ -81,6 +81,5 @@ flutter test --coverage
 - [ ] Sincronização offline
 - [ ] Integração com calendário
 
-```
 [📲 Baixar Lista de Tarefas v1.0](https://github.com/emanoelsg/list_firebase/releases/latest/download/app-release.apk)
 

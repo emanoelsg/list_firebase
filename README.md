@@ -1,68 +1,82 @@
 # 📋 Gerenciador de Atividades Diárias
+**App Flutter de produtividade com autenticação, sincronização e notificações locais**
 
-
-![Coverage](https://codecov.io/gh/emanoelsg/list_firebase/graph/badge.svg?token=OH5YR7MGM0)
-![Build](https://github.com/emanoelsg/list_firebase/workflows/Flutter%20CI/badge.svg)
-
-> Sistema completo de gerenciamento de tarefas com autenticação Firebase e notificações locais.
-
-> Aplicativo Flutter para gerenciamento de tarefas diárias, com autenticação de usuários, notificações personalizadas e integração com Firebase.
-
-> Aplicativo de gerenciamento de tarefas com notificações e autenticação, desenvolvido em Flutter com integração Firebase.
-[![codecov](https://codecov.io/gh/emanoelsg/list_firebase/graph/badge.svg?token=OH5YR7MGM0)](https://codecov.io/gh/emanoelsg/list_firebase)
----
 ---
 
-## 🖼 Screenshots
+## 🚀 Visão Geral — Qual problema eu resolvo?
+Este aplicativo ajuda pessoas **a gerenciar tarefas diárias com lembretes e sincronização de dados em tempo real**.  
+Muitos apps de tarefas são **isolados ou visuais apenas** — este app foi pensado para:
 
+- ✅ Usuários que precisam de **cadastro seguro**
+- ✅ Lembretes que realmente disparam no horário definido
+- ✅ Dados sincronizados entre dispositivos via Firebase
+- ✅ Interface fluida e responsiva
+- ✅ Testes automatizados que garantem confiabilidade
+
+> Este não é “mais um To‑Do genérico” — é um **sistema completo de produtividade com backend real**, testes e deploy automatizado.
+
+---
+
+## 📲 Screenshots com contexto de uso
 
 <p align="center">
-  <img src="flutter_01.png" alt="Edit Screen" width="200"/>
   <img src="flutter_02.png" alt="Login Screen" width="200"/>
   <img src="flutter_03.png" alt="Register Screen" width="200"/>
-  <img src="flutter_04.png" alt="Home Page" width="200"/>
+  <img src="flutter_04.png" alt="Home Page com tarefas reais" width="200"/>
+  <img src="flutter_01.png" alt="Tela de edição de tarefa" width="200"/>
 </p>
 
+> As telas acima mostram o app funcionando com dados reais de usuário — autenticação, visualização de tarefas e edição.
 
+---
+
+## 🧠 Decisões Técnicas e Justificativas
+
+| Escolha Técnica | Justificativa |
+|-----------------|---------------|
+| **Flutter + GetX** | Permite UI reativa e gerenciamento de estado sem boilerplate excessivo; melhora produtividade sem sacrificar escalabilidade. |
+| **Firebase Authentication** | Solução segura e amplamente usada para autenticação de usuários sem servidor backend próprio. |
+| **Cloud Firestore** | Banco de dados em tempo real que sincroniza entre dispositivos e garante persistência confiável. |
+| **Notificações Locais** | Permite lembretes efetivos, mesmo quando o app está em segundo plano. |
+| **Clean Architecture** | Separa UI, domínio e integração com serviços externos — facilitando testes e manutenção. |
+| **CI/CD com GitHub Actions** | Automatiza testes e builds em cada commit, garantindo qualidade contínua. |
+| **Testes Automatizados** | Testes de unidade e integração que capturam comportamento crítico. |
+
+---
 
 ## 🛠 Tecnologias Utilizadas
 
-![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=white)
-![GetX](https://img.shields.io/badge/GetX-FF5722?style=flat&logoColor=white)
-![CI](https://img.shields.io/badge/CI-CD-blue)
-
-- **Frontend:** Flutter 3.9.0, GetX, Material Design
-- **Backend:** Firebase (Auth, Firestore, Storage)
-- **Testes:** Mocktail, Flutter Test
-- **CI/CD:** GitHub Actions, CodeCov
-- **GetX**  Gerenciamento de estado reativo 
-- **Notificações Locais** Agendamento de lembretes e alertas para tarefas.  
-- **Testes Unitários** `flutter_test`, `mocktail` e `fake_firestore` para garantir confiabilidade.  
+- **Flutter 3.9.0 + Dart**  
+- **GetX** – Estado e rotas reativos  
+- **Firebase Auth & Firestore** – Backend sem servidor  
+- **Notificações Locais** – Flutter Local Notifications  
+- **Mocktail / fake_firestore** – Testes unitários com simulações  
+- **GitHub Actions** – CI/CD  
+- **Codecov** – Indicador de cobertura (controle de qualidade)
 
 ---
 
-## 🚀 Recursos
+## 🧪 Testes Automatizados (com exemplos)
 
-- ✅ Autenticação segura com Firebase
-- ✅ CRUD completo de tarefas
-- ✅ Notificações locais agendadas
-- ✅ UI responsiva e intuitiva
-- ✅ +70% de cobertura de testes
+Escrever testes não é “marcar caixinha”. Aqui está **o que os testes garantem**:
 
-## 🧪 Testes
+- Fluxo de autenticação funciona com dados válidos  
+- Erros de login geram mensagens apropriadas  
+- CRUD de tarefas funciona corretamente  
+- Lembretes são agendados conforme esperado  
+- Camada de domínio isolada da camada de Firebase
 
+### Exemplos
 ```bash
 flutter test --coverage
-```
 
 ## 🚀 Estrutura do Projeto
 
-- **data/** – Implementação dos repositórios e integração com Firebase.  
-- **domain/** – Entidades e interfaces, abstraindo regras de negócio.  
-- **presentation/** – Controllers, páginas e widgets (UI reativa via GetX).  
-- **service/** – Serviços externos, como notificações e integração com APIs.  
+lib/
+├── data/         # Repositórios, mapeadores e integração Firebase
+├── domain/       # Entidades e regras de negócio puras
+├── presentation/ # UI, Controllers e Bindings (GetX)
+├── service/      # Serviços como notificações e helpers 
 
 ---
 

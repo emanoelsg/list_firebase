@@ -1,18 +1,14 @@
-name: Flutter CI/CD
+name: Flutter CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
-    name: Build, Test & Analyze Flutter
+  unit-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -20,44 +16,76 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.35.1'
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-install-cache-${{ vars.FLUTTER_VERSION }}
 
-      - name: Flutter pub get
+      - name: Cache Pub dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Flutter analyze
-        run: flutter analyze
+      - name: Install LCOV
+        run: sudo apt-get install -y lcov
 
       - name: Run tests with coverage
         run: flutter test --coverage
-
-      - name: Install lcov
-        run: sudo apt-get install lcov
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        
+      - name: Report code coverage
+        run: lcov --list coverage/lcov.info
+        
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
 
-      - name: Build APK
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage/lcov.info
+
+  build-apk:
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-install-cache-${{ vars.FLUTTER_VERSION }}
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cache-
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
         run: flutter build apk --release
 
-      - name: Create Release
-        id: create_release
-        uses: ncipollo/release-action@v1
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag: v1.${{ github.run_number }}
-          name: Release v1.${{ github.run_number }}
-          body: "Automated release from GitHub Actions"
-          draft: false
-          prerelease: false
-
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk

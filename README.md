@@ -70,6 +70,8 @@ Escrever testes não é “marcar caixinha”. Aqui está **o que os testes gara
 ```bash
 flutter test --coverage
 
+```
+
 ## 🚀 Estrutura do Projeto
 
 lib/

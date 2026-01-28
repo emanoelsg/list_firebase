@@ -73,13 +73,13 @@ flutter test --coverage
 ```
 
 ## 🚀 Estrutura do Projeto
-
+```
 lib/
 ├── data/         # Repositórios, mapeadores e integração Firebase
 ├── domain/       # Entidades e regras de negócio puras
 ├── presentation/ # UI, Controllers e Bindings (GetX)
 ├── service/      # Serviços como notificações e helpers 
-
+```
 ---
 
 ## 🎯 Diferenciais do Projeto

@@ -52,7 +52,6 @@ Muitos apps de tarefas são **isolados ou visuais apenas** — este app foi pens
 - **Notificações Locais** – Flutter Local Notifications  
 - **Mocktail / fake_firestore** – Testes unitários com simulações  
 - **GitHub Actions** – CI/CD  
-- **Codecov** – Indicador de cobertura (controle de qualidade)
 
 ---
 
@@ -85,7 +84,6 @@ lib/
 ## 🎯 Diferenciais do Projeto
 
 - Arquitetura modular, limpa e escalável (**Clean Architecture**).  
-- Código totalmente testável, com alta cobertura de testes unitários.  
 - Integração real com Firebase e notificações locais.  
 - Facilita futuras implementações e manutenção do código.  
 

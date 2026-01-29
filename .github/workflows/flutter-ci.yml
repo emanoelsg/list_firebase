@@ -4,11 +4,12 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [ main]
 
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -17,46 +18,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.1'
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v3
-        with:
-          path: /opt/hostedtoolcache/flutter
-          key: ${{ runner.os }}-flutter-install-cache-${{ vars.FLUTTER_VERSION }}
 
-      - name: Cache Pub dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-cache-
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Install LCOV
-        run: sudo apt-get install -y lcov
+      - name: Run unit tests
+        run: flutter test
 
-      - name: Run tests with coverage
-        run: flutter test --coverage
-        
-      - name: Report code coverage
-        run: lcov --list coverage/lcov.info
-        
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/lcov.info
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage
-          path: coverage/lcov.info
 
   build-apk:
     needs: [unit-tests]
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -65,22 +39,11 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.1'
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v3
-        with:
-          path: /opt/hostedtoolcache/flutter
-          key: ${{ runner.os }}-flutter-install-cache-${{ vars.FLUTTER_VERSION }}
 
-      - name: Cache Pub dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-cache-
       - name: Install dependencies
         run: flutter pub get
-
+      - name: Run tests
+        run: flutter test
       - name: Build release APK
         run: flutter build apk --release
 
